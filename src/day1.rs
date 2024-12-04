@@ -1,6 +1,5 @@
 use std::error::Error;
 
-
 pub(crate) fn d1(input: &str) -> Result<String, Box<dyn Error>> {
 
 	// 1. Create two arrays.

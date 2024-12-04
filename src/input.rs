@@ -3,45 +3,33 @@ use curl::easy::Easy;
 use std::{
     error::Error,
     fmt::{Display, Write as _},
-    fs::File,
+    fs::{create_dir, File},
     io::{self, Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
-#[derive(Debug)]
-pub(super) enum RetrieveInputError {
-    Io(io::Error),
-    NoCookieForDownload,
+const INPUTS_DIR_PATH: &str = "inputs";
+const AOC_COOKIE_PATH: &str = "cookie.txt";
+
+pub(crate) fn load_cookie() -> Result<String, io::Error> {
+    File::open(AOC_COOKIE_PATH).map(|mut file| {
+        let mut string = String::new();
+        file.read_to_string(&mut string).map(|_| string)
+    })?
 }
 
-impl Display for RetrieveInputError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RetrieveInputError::Io(error) => error.fmt(f),
-            RetrieveInputError::NoCookieForDownload => {
-                write!(f, "No cookie supplied to download from AOC")
-            }
-        }
-    }
-}
+pub(crate) fn init_inputs_cache() -> Result<PathBuf, io::Error> {
+    let inputs_cache_path = PathBuf::from(INPUTS_DIR_PATH);
 
-impl Error for RetrieveInputError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match self {
-            RetrieveInputError::Io(error) => Some(error),
-            RetrieveInputError::NoCookieForDownload => None,
-        }
+    if !inputs_cache_path.exists() {
+        create_dir(&inputs_cache_path)?;
     }
-}
 
-impl From<io::Error> for RetrieveInputError {
-    fn from(value: io::Error) -> Self {
-        RetrieveInputError::Io(value)
-    }
+    Ok(inputs_cache_path)
 }
 
 /// Retrieve either the cached input data for a day, or download the input from AOC and cache it.
-pub(super) fn retrieve_input(
+pub(crate) fn retrieve_input(
     day: usize,
     cookie_opt: Option<&str>,
     inputs_cache_path: &Path,
@@ -88,4 +76,36 @@ fn download_input(day: usize, cookie: &str) -> Result<String, io::Error> {
     }
 
     Ok(input)
+}
+
+#[derive(Debug)]
+pub(crate) enum RetrieveInputError {
+    Io(io::Error),
+    NoCookieForDownload,
+}
+
+impl Display for RetrieveInputError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RetrieveInputError::Io(error) => error.fmt(f),
+            RetrieveInputError::NoCookieForDownload => {
+                write!(f, "No cookie supplied to download from AOC")
+            }
+        }
+    }
+}
+
+impl Error for RetrieveInputError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            RetrieveInputError::Io(error) => Some(error),
+            RetrieveInputError::NoCookieForDownload => None,
+        }
+    }
+}
+
+impl From<io::Error> for RetrieveInputError {
+    fn from(value: io::Error) -> Self {
+        RetrieveInputError::Io(value)
+    }
 }

@@ -2,44 +2,25 @@ mod day1;
 mod input;
 
 use core::str;
-use std::{
-    error::Error,
-    fs::{create_dir, File},
-    io::Read,
-    path::Path,
-};
+use std::error::Error;
 
 type DayFunc = fn(&str) -> Result<String, Box<dyn Error>>;
 const DAYS: &'static [DayFunc] = &[day1::d1];
 
-const INPUTS_DIR_PATH: &str = "inputs";
-const AOC_COOKIE_PATH: &str = "cookie.txt";
-
 fn main() {
-    let inputs_cache_path = Path::new(INPUTS_DIR_PATH);
-    if !inputs_cache_path.exists() {
-        create_dir(inputs_cache_path).expect("Failed to create the input cache directory!");
-    }
-
-    let download_cookie = File::open(AOC_COOKIE_PATH)
-        .map(|mut file| {
-            let mut string = String::new();
-
-            file.read_to_string(&mut string)
-                .map(|_| string)
-                .unwrap_or_else(|_| panic!("Failed to read the contents of `{}`!", AOC_COOKIE_PATH))
-        })
-        .ok();
+    let inputs_cache_path =
+        input::init_inputs_cache().expect("Failed to initialize inputs cache path!");
+    let cookie_opt = input::load_cookie().ok();
 
     DAYS.iter()
         .enumerate()
         .map(|(i, day)| (i + 1, day))
         .map(|(day, day_func)| {
-            let result =
-                match input::retrieve_input(day, download_cookie.as_deref(), inputs_cache_path) {
-                    Ok(input) => day_func(&input),
-                    Err(err) => Err(err.into()),
-                };
+            let result = match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
+            {
+                Ok(input) => day_func(&input),
+                Err(err) => Err(err.into()),
+            };
 
             (day, result)
         })
