@@ -1,6 +1,12 @@
 use std::error::Error;
 
-pub(crate) fn d1(input: &str) -> Result<String, Box<dyn Error>> {
+use crate::not_yet_implemented;
+
+pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+	Ok((part1(input)?, part2(input)?))
+}
+
+fn part1(input: &str) -> Result<String, Box<dyn Error>> {
 
 	// 1. Create two arrays.
 	// 2. Iterate over each line of input, putting LHS of whitespace into arr1, RHS into arr2 (converted to numbers.)
@@ -32,6 +38,11 @@ pub(crate) fn d1(input: &str) -> Result<String, Box<dyn Error>> {
 
 	}
 
-	Ok(format!("{}", sum))
+	Ok(sum.to_string())
 
+}
+
+#[allow(unused)]
+fn part2(input: &str) -> Result<String, Box<dyn Error>> {
+	Ok(not_yet_implemented())
 }

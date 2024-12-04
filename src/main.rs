@@ -4,8 +4,8 @@ mod input;
 use core::str;
 use std::error::Error;
 
-type DayFunc = fn(&str) -> Result<String, Box<dyn Error>>;
-const DAYS: &'static [DayFunc] = &[day1::d1];
+type DayFunc = fn(&str) -> Result<(String, String), Box<dyn Error>>;
+const DAYS: &'static [DayFunc] = &[day1::solve];
 
 fn main() {
     let inputs_cache_path =
@@ -28,8 +28,12 @@ fn main() {
             print!("Day {} :: ", day);
 
             match result {
-                Ok(output) => println!("Output = {}", output),
+                Ok((part1, part2)) => println!("Part 1 = {}, Part 2 = {}", part1, part2),
                 Err(err) => println!("Error! {:#?}", err),
             }
         });
+}
+
+pub(crate) fn not_yet_implemented() -> String {
+	"Not yet implemented!".to_string()
 }
