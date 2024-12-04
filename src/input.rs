@@ -1,3 +1,5 @@
+//! Handling for downloading, caching and generally providing the input data required for each day.
+
 use core::str;
 use curl::easy::Easy;
 use std::{
