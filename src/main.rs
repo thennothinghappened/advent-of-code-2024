@@ -1,135 +1,141 @@
+
+mod day1;
+
 use core::str;
-use std::{fmt::Write, fs::{create_dir, File}, io::{Read, Write as OtherWrite}, path::Path};
+use std::{error::Error, fmt::{Display, Write}, fs::{create_dir, File}, io::{self, Read, Write as OtherWrite}, path::Path};
 use curl::easy::Easy;
 
-type DayFunc = fn(&str);
-const DAYS: &'static [DayFunc] = &[d1];
+type DayFunc = fn(&str) -> Result<String, Box<dyn Error>>;
+const DAYS: &'static [DayFunc] = &[day1::d1];
+
+const INPUTS_DIR_PATH: &str = "inputs";
+const AOC_COOKIE_PATH: &str = "cookie.txt";
 
 fn main() {
-
-	let aoc_cookie = match File::open("cookie.txt") {
-		Ok(mut file) => {
-			
-			let mut string = String::new();
-			file.read_to_string(&mut string).expect("Failed to read cookie!");
-
-			println!("cookie: {}", string);
-
-			string
-
-		},
-		Err(_) => panic!("Please supply a cookie via `cookie.txt`, so we can download AOC day inputs."),
-	};
-
-	let cache_path = Path::new("./cache");
-
-	if !cache_path.exists() {
-		create_dir(cache_path).expect("Failed to create the cache directory!");
+	
+	let inputs_cache_path = Path::new(INPUTS_DIR_PATH);
+	if !inputs_cache_path.exists() {
+		create_dir(inputs_cache_path).expect("Failed to create the input cache directory!");
 	}
+	
+	let download_cookie = File::open(AOC_COOKIE_PATH).map(|mut file| {
 
-	for (index, day) in DAYS.iter().enumerate() {
+		let mut string = String::new();
+
+		file
+			.read_to_string(&mut string)
+			.map(|_| string)
+			.unwrap_or_else(|_| panic!("Failed to read the contents of `{}`!", AOC_COOKIE_PATH))
 		
-		let day_number = index + 1;
-		let input_path = cache_path.join(format!("day_{}.txt", day_number));
-		
-		let input = match File::open(&input_path) {
+	}).ok();
 
-			Ok(mut file) => {
+	DAYS
+		.iter()
+		.enumerate()
+		.map(|(i, day)| (i + 1, day))
+		.map(|(day, day_func)| {
 
-				let mut string = String::new();
+			let result = match retrieve_input(day, download_cookie.as_deref(), inputs_cache_path) {
+				Ok(input) => day_func(&input),
+				Err(err) => Err(err.into()),
+			};
 
-				file
-					.read_to_string(&mut string)
-					.expect("Failed to read input data from cached input file!");
+			(day, result)
 
-				string
+		}).for_each(|(day, result)| {
 
-			},
+			print!("Day {} :: ", day);
 
-			Err(_) => {
-
-				println!("Downloading input for day {}...", day_number);
-				
-				let mut input = String::new();
-				let mut request = Easy::new();
-
-				request
-					.url(&format!("https://adventofcode.com/2024/day/{}/input", day_number))
-					.unwrap();
-
-				request
-					.cookie(&aoc_cookie)
-					.unwrap();
-
-				{
-
-					let mut transfer = request.transfer();
-					
-					transfer.write_function(|data| {
-
-						input.write_str(str::from_utf8(data).unwrap())
-							.map(|_| Ok(input.len()))
-							.expect("Very bad things have happened while writing input to a string!!!")
-
-					}).unwrap();
-
-					transfer
-						.perform()
-						.expect(&format!("Failed to get input for day {}!", day_number));
-
-				}
-				
-				let mut file = File::create_new(&input_path)
-					.expect("Failed to create file for day input!");
-
-				file.write_all(input.as_bytes())
-					.expect("Failed to write data to input cache file!");
-
-				input
-				
+			match result {
+				Ok(output) => println!("Output = {}", output),
+				Err(err) => println!("Error! {:#?}", err),
 			}
 
-		};
-
-		day(&input);
-
-	}
+		});
 
 }
 
-#[allow(unused)]
-fn d1(input: &str) {
+#[derive(Debug)]
+enum RetrieveInputError {
+	Io(io::Error),
+	NoCookieForDownload
+}
 
-	// 1. Create two arrays.
-	// 2. Iterate over each line of input, putting LHS of whitespace into arr1, RHS into arr2 (converted to numbers.)
-	// 3. Get the smallest of both arrays, += the absolute difference to output.
-	// 4. Print output.
+impl Display for RetrieveInputError {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			RetrieveInputError::Io(error) => error.fmt(f),
+			RetrieveInputError::NoCookieForDownload => write!(f, "No cookie supplied to download from AOC"),
+		}
+	}
+}
 
-	let mut arr1 = Vec::<i32>::new();
-	let mut arr2 = Vec::<i32>::new();
-	let mut sum = 0;
+impl Error for RetrieveInputError {
+	fn source(&self) -> Option<&(dyn Error + 'static)> {
+		match self {
+			RetrieveInputError::Io(error) => Some(error),
+			RetrieveInputError::NoCookieForDownload => None,
+		}
+	}
+}
+
+impl From<io::Error> for RetrieveInputError {
+	fn from(value: io::Error) -> Self {
+		RetrieveInputError::Io(value)
+	}
+}
+
+/// Retrieve either the cached input data for a day, or download the input from AOC and cache it.
+fn retrieve_input(day: usize, cookie_opt: Option<&str>, inputs_cache_path: &Path) -> Result<String, RetrieveInputError> {
+
+	let input_path = inputs_cache_path.join(format!("day_{}.txt", day));
 	
-	for line in input.lines() {
-
-		let mut split = line.split_whitespace();
-		let lhs = split.next().unwrap().parse::<i32>().unwrap();
-		let rhs = split.next().unwrap().parse::<i32>().unwrap();
+	if let Ok(mut file) = File::open(&input_path) {
 		
-		arr1.push(lhs);
-		arr2.push(rhs);
+		let mut input = String::new();
+		file.read_to_string(&mut input)?;
+
+		return Ok(input);
 
 	}
 
-	arr1.sort();
-	arr2.sort();
+	let cookie = cookie_opt.ok_or_else(|| RetrieveInputError::NoCookieForDownload)?;
 
-	for (index, lhs) in arr1.iter().enumerate() {
+	let input = download_input(day, &cookie)?;
+	let mut file = File::create_new(&input_path)?;
+	file.write_all(input.as_bytes())?;
+
+	Ok(input)
+	
+}
+
+/// Download the solution input for the given day.
+fn download_input(day: usize, cookie: &str) -> Result<String, io::Error> {
+
+	println!("Downloading input for day {}...", day);
+	
+	let mut input = String::new();
+	let mut request = Easy::new();
+
+	request.url(&format!("https://adventofcode.com/2024/day/{}/input", day))?;
+	request.cookie(cookie)?;
+
+	{
+
+		let mut transfer = request.transfer();
 		
-		let rhs = arr2[index];
-		sum += lhs.abs_diff(rhs);
+		transfer.write_function(|data| {
+
+			input.write_str(str::from_utf8(data).unwrap())
+				.map(|_| Ok(input.len()))
+				.expect("Very bad things have happened while writing input to a string!!!")
+
+		})?;
+
+		transfer.perform()?;
 
 	}
-
-	println!("Result: {}", sum);
+	
+	Ok(input)
 
 }
