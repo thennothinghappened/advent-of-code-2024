@@ -1,11 +1,12 @@
-mod day1;
 mod input;
+mod day1;
+mod day2;
 
 use core::str;
 use std::error::Error;
 
 type DayFunc = fn(&str) -> Result<(String, String), Box<dyn Error>>;
-const DAYS: &'static [DayFunc] = &[day1::solve];
+const DAYS: &'static [DayFunc] = &[day1::solve, day2::solve];
 
 fn main() {
     let inputs_cache_path =
