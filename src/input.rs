@@ -1,7 +1,6 @@
 //! Handling for downloading, caching and generally providing the input data required for each day.
 
 use core::str;
-use curl::easy::Easy;
 use std::{
     error::Error,
     fmt::{Display, Write as _},
@@ -55,34 +54,22 @@ pub(crate) fn retrieve_input(
 }
 
 /// Download the solution input for the given day.
-fn download_input(day: usize, cookie: &str) -> Result<String, io::Error> {
+fn download_input(day: usize, cookie: &str) -> Result<String, reqwest::Error> {
     println!("Downloading input for day {}...", day);
 
-    let mut input = String::new();
-    let mut request = Easy::new();
+    let client = reqwest::blocking::Client::new();
 
-    request.url(&format!("https://adventofcode.com/2024/day/{}/input", day))?;
-    request.cookie(cookie)?;
-
-    {
-        let mut transfer = request.transfer();
-
-        transfer.write_function(|data| {
-            input
-                .write_str(str::from_utf8(data).unwrap())
-                .map(|_| Ok(input.len()))
-                .expect("Very bad things have happened while writing input to a string!!!")
-        })?;
-
-        transfer.perform()?;
-    }
-
-    Ok(input)
+    client
+        .get(format!("https://adventofcode.com/2024/day/{}/input", day))
+        .header(reqwest::header::COOKIE, cookie)
+        .send()?
+        .text()
 }
 
 #[derive(Debug)]
 pub(crate) enum RetrieveInputError {
     Io(io::Error),
+	Network(reqwest::Error),
     NoCookieForDownload,
 }
 
@@ -90,9 +77,8 @@ impl Display for RetrieveInputError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             RetrieveInputError::Io(error) => error.fmt(f),
-            RetrieveInputError::NoCookieForDownload => {
-                write!(f, "No cookie supplied to download from AOC")
-            }
+            RetrieveInputError::NoCookieForDownload => write!(f, "No cookie supplied to download from AOC"),
+			RetrieveInputError::Network(error) => error.fmt(f),
         }
     }
 }
@@ -101,6 +87,7 @@ impl Error for RetrieveInputError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             RetrieveInputError::Io(error) => Some(error),
+			RetrieveInputError::Network(error) => Some(error),
             RetrieveInputError::NoCookieForDownload => None,
         }
     }
@@ -111,3 +98,10 @@ impl From<io::Error> for RetrieveInputError {
         RetrieveInputError::Io(value)
     }
 }
+
+impl From<reqwest::Error> for RetrieveInputError {
+    fn from(value: reqwest::Error) -> Self {
+        RetrieveInputError::Network(value)
+    }
+}
+
