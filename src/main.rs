@@ -34,6 +34,7 @@ fn main() {
         });
 }
 
+#[allow(dead_code)]
 pub(crate) fn not_yet_implemented() -> String {
 	"Not yet implemented!".to_string()
 }
