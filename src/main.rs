@@ -1,6 +1,7 @@
 
-mod days;
+mod utils;
 mod input;
+mod days;
 
 fn main() {
     let inputs_cache_path =
