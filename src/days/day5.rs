@@ -8,10 +8,6 @@ use crate::utils::not_yet_implemented;
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
     let mut lines = input.lines().into_iter();
     let mut dependencies = HashMap::<usize, HashSet<usize>>::new();
 
@@ -32,39 +28,48 @@ fn part1(input: &str) -> PartResult {
                 .insert(dependency);
         });
 
-    let correct = lines
+    let updates = lines
         .map(|update| {
             update
                 .split(',')
                 .map(|page| page.parse::<usize>().unwrap())
                 .collect::<Vec<usize>>()
         })
-        .filter_map(|update| {
-            let mut seen_pages = HashSet::<&usize>::new();
+        .collect::<Vec<Vec<usize>>>();
 
-            for page in update.iter() {
-                seen_pages.insert(page);
+    Ok((
+        part1(&dependencies, &updates)?,
+        part2(&dependencies, &updates)?,
+    ))
+}
 
-                let Some(deps) = dependencies.get(page) else {
-                    continue;
-                };
+fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
+    let correct = updates.iter().filter_map(|update| {
+        let mut seen_pages = HashSet::<&usize>::new();
 
-                if deps
-                    .iter()
-                    .filter(|dep| update.contains(dep))
-                    .any(|dep| !seen_pages.contains(dep))
-                {
-                    return None;
-                }
+        for page in update.iter() {
+            seen_pages.insert(page);
+
+            let Some(deps) = dependencies.get(page) else {
+                continue;
+            };
+
+            if deps
+                .iter()
+                .filter(|dep| update.contains(dep))
+                .any(|dep| !seen_pages.contains(dep))
+            {
+                return None;
             }
+        }
 
-            Some(update)
-        });
+        Some(update)
+    });
 
     let sum_middle_pages: usize = correct.map(|update| update[update.len() / 2]).sum();
     Ok(sum_middle_pages.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
+fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
     not_yet_implemented()
 }
