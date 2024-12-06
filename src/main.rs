@@ -1,12 +1,13 @@
 mod day1;
 mod day2;
+mod day3;
 mod input;
 
 use core::str;
 use std::error::Error;
 
 type DayFunc = fn(&str) -> Result<(String, String), Box<dyn Error>>;
-const DAYS: &'static [DayFunc] = &[day1::solve, day2::solve];
+const DAYS: &'static [DayFunc] = &[day1::solve, day2::solve, day3::solve];
 
 fn main() {
     let inputs_cache_path =
@@ -26,12 +27,16 @@ fn main() {
             (day, result)
         })
         .for_each(|(day, result)| {
-            print!("Day {} :: ", day);
+            println!("--- Day {} ---", day);
 
             match result {
-                Ok((part1, part2)) => println!("Part 1 = {}, Part 2 = {}", part1, part2),
+                Ok((part1, part2)) => {
+                    println!("Part 1 :: {}", part1);
+                    println!("Part 2 :: {}", part2);
+                }
                 Err(err) => println!("Error! {:#?}", err),
             }
+            println!();
         });
 }
 
