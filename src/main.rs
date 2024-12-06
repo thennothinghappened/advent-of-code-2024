@@ -1,20 +1,12 @@
-mod day1;
-mod day2;
-mod day3;
 mod input;
-
-use core::str;
-use std::error::Error;
-
-type DayFunc = fn(&str) -> Result<(String, String), Box<dyn Error>>;
-const DAYS: &'static [DayFunc] = &[day1::solve, day2::solve, day3::solve];
+mod days;
 
 fn main() {
     let inputs_cache_path =
         input::init_inputs_cache().expect("Failed to initialize inputs cache path!");
     let cookie_opt = input::load_cookie().ok();
 
-    DAYS.iter()
+    days::DAYS.iter()
         .enumerate()
         .map(|(i, day)| (i + 1, day))
         .map(|(day, day_func)| {
