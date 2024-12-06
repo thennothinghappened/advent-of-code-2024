@@ -18,6 +18,9 @@ fn main() {
         .enumerate()
         .map(|(i, day)| (i + 1, day))
         .map(|(day, day_func)| {
+
+			println!("--- Day {} ---", day);
+
             let result = match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
             {
                 Ok(input) => day_func(&input),
@@ -27,7 +30,6 @@ fn main() {
             (day, result)
         })
         .for_each(|(day, result)| {
-            println!("--- Day {} ---", day);
 
             match result {
                 Ok((part1, part2)) => {
