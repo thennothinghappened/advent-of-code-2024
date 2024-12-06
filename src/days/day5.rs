@@ -44,27 +44,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
 }
 
 fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
-    let correct = updates.iter().filter_map(|update| {
-        let mut seen_pages = HashSet::<&usize>::new();
-
-        for page in update.iter() {
-            seen_pages.insert(page);
-
-            let Some(deps) = dependencies.get(page) else {
-                continue;
-            };
-
-            if deps
-                .iter()
-                .filter(|dep| update.contains(dep))
-                .any(|dep| !seen_pages.contains(dep))
-            {
-                return None;
-            }
-        }
-
-        Some(update)
-    });
+    let correct = updates
+        .iter()
+        .filter(|update| is_valid(update, dependencies));
 
     let sum_middle_pages: usize = correct.map(|update| update[update.len() / 2]).sum();
     Ok(sum_middle_pages.to_string())
@@ -72,4 +54,27 @@ fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>
 
 fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
     not_yet_implemented()
+}
+
+/// Determine whether an update list satisfies the dependencies.
+fn is_valid(update: &Vec<usize>, dependencies: &HashMap<usize, HashSet<usize>>) -> bool {
+    let mut seen_pages = HashSet::<&usize>::new();
+
+    for page in update.iter() {
+        seen_pages.insert(page);
+
+        let Some(deps) = dependencies.get(page) else {
+            continue;
+        };
+
+        if deps
+            .iter()
+            .filter(|dep| update.contains(dep))
+            .any(|dep| !seen_pages.contains(dep))
+        {
+            return false;
+        }
+    }
+
+    true
 }
