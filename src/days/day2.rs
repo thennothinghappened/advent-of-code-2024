@@ -1,7 +1,5 @@
 use std::{char::MAX, cmp, error::Error, f32::MIN, ops::Deref};
 
-use crate::not_yet_implemented;
-
 const MIN_DEVIATION: i32 = 1;
 const MAX_DEVIATION: i32 = 3;
 

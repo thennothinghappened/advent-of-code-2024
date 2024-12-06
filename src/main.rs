@@ -1,3 +1,5 @@
+use std::error::Error;
+
 mod days;
 mod input;
 
@@ -34,6 +36,6 @@ fn main() {
 }
 
 #[allow(dead_code)]
-pub(crate) fn not_yet_implemented() -> String {
-    "Not yet implemented!".to_string()
+pub(crate) fn not_yet_implemented() -> Result<String, Box<dyn Error>> {
+    Ok("Not yet implemented!".to_string())
 }
