@@ -1,4 +1,3 @@
-use crate::utils::not_yet_implemented;
 use std::error::Error;
 
 const XMAS: &[char] = &['X', 'M', 'A', 'S'];
@@ -18,11 +17,10 @@ const P2_CHECK_OFFSETS: &[(i32, i32)] = &[
 ];
 
 pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-
-	let char_matrix = input
-		.lines()
-		.map(|line| line.chars().collect())
-		.collect::<Vec<Vec<char>>>();
+    let char_matrix = input
+        .lines()
+        .map(|line| line.chars().collect())
+        .collect::<Vec<Vec<char>>>();
 
     Ok((part1(&char_matrix)?, part2(&char_matrix)?))
 }
@@ -80,31 +78,29 @@ fn part2(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
                 continue;
             }
 
-			let mut found = 0;
+            let mut found = 0;
 
             for (ox, oy) in P2_CHECK_OFFSETS {
-
-				let mut check_x = ((x as i32) + ox) as usize;
-				let mut check_y = ((y as i32) + oy) as usize;
+                let mut check_x = ((x as i32) + ox) as usize;
+                let mut check_y = ((y as i32) + oy) as usize;
 
                 if char_matrix[check_y][check_x] != 'M' {
                     continue;
                 }
 
-				check_x = ((x as i32) - ox) as usize;
-				check_y = ((y as i32) - oy) as usize;
+                check_x = ((x as i32) - ox) as usize;
+                check_y = ((y as i32) - oy) as usize;
 
-				if char_matrix[check_y][check_x] != 'S' {
-					continue;
-				}
+                if char_matrix[check_y][check_x] != 'S' {
+                    continue;
+                }
 
                 found += 1;
             }
 
-			if found == 2 {
-				matches += 1;
-			}
-
+            if found == 2 {
+                matches += 1;
+            }
         }
     }
 
