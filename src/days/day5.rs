@@ -1,9 +1,8 @@
 use std::{
+    cmp::Ordering,
     collections::{HashMap, HashSet},
     iter,
 };
-
-use crate::utils::not_yet_implemented;
 
 use super::{DayResult, PartResult};
 
@@ -53,55 +52,34 @@ fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>
 }
 
 fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
-    // TODO: rewrite this godawful hell. Sure, this is meant for learning Rust so I can excuse some
-    // bad quality code for the sake of learning, but this is just ridiculous.
-
-    let incorrect = updates
-        .iter()
-        .filter(|update| !is_valid(update, dependencies));
-
-    let mut sum_middle_pages: usize = 0;
-
     // We're working under the assumption that there IS always a valid order, and work to achieve
     // that.
 
-    for update in incorrect {
-        // 1. Iterate over each entry.
-        // 2. Check if its dependencies are satisfied.
-        // 3. If not, move the unsatisfied dependency before it.
-        // 4. If step 3 occurred, restart at 1.
-        // 5. Consider it sorted.
-
-        let mut shuffleable_update = update.clone();
-
-        'dep_loop: loop {
-            let mut seen_pages = HashSet::<&usize>::new();
-
-            for (i, page) in shuffleable_update.clone().iter().enumerate() {
-                seen_pages.insert(page);
-
-                let Some(deps) = dependencies.get(page) else {
-                    continue;
-                };
-
-                for unmet in deps
-                    .iter()
-                    .filter(|dep| !seen_pages.contains(dep))
-                    .filter_map(|dep| shuffleable_update.iter().position(|page| *page == *dep))
-                {
-                    let dep = shuffleable_update.remove(unmet);
-                    shuffleable_update.insert(i, dep);
-
-                    continue 'dep_loop;
+    let sum_middle_pages = updates
+        .iter()
+        .filter(|update| !is_valid(update, dependencies))
+        .map(|update| update.clone())
+        .map(|mut update| {
+            update.sort_unstable_by(|a, b| {
+                if let Some(deps_for_a) = dependencies.get(a) {
+                    if deps_for_a.contains(b) {
+                        return Ordering::Greater;
+                    }
                 }
-            }
 
-            break 'dep_loop;
-        }
+                if let Some(deps_for_b) = dependencies.get(b) {
+                    if deps_for_b.contains(a) {
+                        return Ordering::Less;
+                    }
+                }
 
-        debug_assert!(is_valid(&shuffleable_update, dependencies));
-        sum_middle_pages += shuffleable_update[update.len() / 2];
-    }
+                Ordering::Equal
+            });
+
+            update
+        })
+        .map(|update| update[update.len() / 2])
+        .sum::<usize>();
 
     Ok(sum_middle_pages.to_string())
 }
