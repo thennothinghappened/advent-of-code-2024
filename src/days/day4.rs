@@ -10,6 +10,13 @@ const CHECK_OFFSETS: &[(i32, i32)] = &[
 	(-1,  1),	(0,  1),	(1,  1),
 ];
 
+#[rustfmt::skip]
+const P2_CHECK_OFFSETS: &[(i32, i32)] = &[
+	(-1, -1),				(1, -1),
+
+	(-1,  1),				(1,  1),
+];
+
 pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     Ok((part1(input)?, part2(input)?))
 }
@@ -64,5 +71,48 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
 }
 
 fn part2(input: &str) -> Result<String, Box<dyn Error>> {
-    not_yet_implemented()
+    let mut matches: usize = 0;
+
+    let char_matrix = input
+        .lines()
+        .map(|line| line.chars().collect())
+        .collect::<Vec<Vec<char>>>();
+
+    for y in 1..char_matrix.len() - 1 {
+        for x in 1..char_matrix[y].len() - 1 {
+            if char_matrix[y][x] != 'A' {
+                continue;
+            }
+
+			let mut found = 0;
+
+            for (ox, oy) in P2_CHECK_OFFSETS {
+
+				let mut check_x = ((x as i32) + ox) as usize;
+				let mut check_y = ((y as i32) + oy) as usize;
+
+                if char_matrix[check_y][check_x] != 'M' {
+                    continue;
+                }
+
+				check_x = ((x as i32) - ox) as usize;
+				check_y = ((y as i32) - oy) as usize;
+
+				if char_matrix[check_y][check_x] != 'S' {
+					continue;
+				}
+
+                found += 1;
+            }
+
+			debug_assert!(found <= 2);
+
+			if found == 2 {
+				matches += 1;
+			}
+
+        }
+    }
+
+    Ok(matches.to_string())
 }
