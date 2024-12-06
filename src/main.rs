@@ -1,6 +1,6 @@
-mod input;
 mod day1;
 mod day2;
+mod input;
 
 use core::str;
 use std::error::Error;
@@ -37,5 +37,5 @@ fn main() {
 
 #[allow(dead_code)]
 pub(crate) fn not_yet_implemented() -> String {
-	"Not yet implemented!".to_string()
+    "Not yet implemented!".to_string()
 }

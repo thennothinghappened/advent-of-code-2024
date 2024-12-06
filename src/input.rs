@@ -69,7 +69,7 @@ fn download_input(day: usize, cookie: &str) -> Result<String, reqwest::Error> {
 #[derive(Debug)]
 pub(crate) enum RetrieveInputError {
     Io(io::Error),
-	Network(reqwest::Error),
+    Network(reqwest::Error),
     NoCookieForDownload,
 }
 
@@ -77,8 +77,10 @@ impl Display for RetrieveInputError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             RetrieveInputError::Io(error) => error.fmt(f),
-            RetrieveInputError::NoCookieForDownload => write!(f, "No cookie supplied to download from AOC"),
-			RetrieveInputError::Network(error) => error.fmt(f),
+            RetrieveInputError::NoCookieForDownload => {
+                write!(f, "No cookie supplied to download from AOC")
+            }
+            RetrieveInputError::Network(error) => error.fmt(f),
         }
     }
 }
@@ -87,7 +89,7 @@ impl Error for RetrieveInputError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             RetrieveInputError::Io(error) => Some(error),
-			RetrieveInputError::Network(error) => Some(error),
+            RetrieveInputError::Network(error) => Some(error),
             RetrieveInputError::NoCookieForDownload => None,
         }
     }
@@ -104,4 +106,3 @@ impl From<reqwest::Error> for RetrieveInputError {
         RetrieveInputError::Network(value)
     }
 }
-
