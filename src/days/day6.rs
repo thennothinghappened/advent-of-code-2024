@@ -2,90 +2,6 @@ use crate::utils::not_yet_implemented;
 
 use super::{DayResult, PartResult};
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
-struct Pos {
-    x: i32,
-    y: i32,
-}
-
-impl Pos {
-    fn is_positive(&self) -> bool {
-        self.x >= 0 && self.y >= 0
-    }
-}
-
-impl std::ops::Add for Pos {
-    type Output = Pos;
-
-    fn add(self, rhs: Pos) -> Self::Output {
-        Pos {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
-
-impl std::ops::Add<Direction> for Pos {
-    type Output = Pos;
-
-    fn add(self, rhs: Direction) -> Self::Output {
-        self + Into::<Pos>::into(rhs)
-    }
-}
-
-impl Into<(i32, i32)> for Pos {
-    fn into(self) -> (i32, i32) {
-        (self.x, self.y)
-    }
-}
-
-impl From<(i32, i32)> for Pos {
-    fn from((x, y): (i32, i32)) -> Self {
-        Pos { x, y }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Up,
-    Right,
-    Down,
-    Left,
-}
-
-impl Direction {
-    fn turned_right(&self) -> Direction {
-        match self {
-            Direction::Up => Direction::Right,
-            Direction::Right => Direction::Down,
-            Direction::Down => Direction::Left,
-            Direction::Left => Direction::Up,
-        }
-    }
-}
-
-impl Into<Pos> for Direction {
-    fn into(self) -> Pos {
-        match self {
-            Direction::Up => Pos { x: 0, y: -1 },
-            Direction::Right => Pos { x: 1, y: 0 },
-            Direction::Down => Pos { x: 0, y: 1 },
-            Direction::Left => Pos { x: -1, y: 0 },
-        }
-    }
-}
-
-impl Into<char> for Direction {
-    fn into(self) -> char {
-        match self {
-            Direction::Up => '^',
-            Direction::Right => '>',
-            Direction::Down => 'V',
-            Direction::Left => '<',
-        }
-    }
-}
-
 pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
@@ -176,4 +92,88 @@ fn part2(input: &str) -> PartResult {
     // 5. Output #loops.
 
     not_yet_implemented()
+}
+
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+struct Pos {
+    x: i32,
+    y: i32,
+}
+
+impl Pos {
+    fn is_positive(&self) -> bool {
+        self.x >= 0 && self.y >= 0
+    }
+}
+
+impl std::ops::Add for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: Pos) -> Self::Output {
+        Pos {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl std::ops::Add<Direction> for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: Direction) -> Self::Output {
+        self + Into::<Pos>::into(rhs)
+    }
+}
+
+impl Into<(i32, i32)> for Pos {
+    fn into(self) -> (i32, i32) {
+        (self.x, self.y)
+    }
+}
+
+impl From<(i32, i32)> for Pos {
+    fn from((x, y): (i32, i32)) -> Self {
+        Pos { x, y }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+impl Direction {
+    fn turned_right(&self) -> Direction {
+        match self {
+            Direction::Up => Direction::Right,
+            Direction::Right => Direction::Down,
+            Direction::Down => Direction::Left,
+            Direction::Left => Direction::Up,
+        }
+    }
+}
+
+impl Into<Pos> for Direction {
+    fn into(self) -> Pos {
+        match self {
+            Direction::Up => Pos { x: 0, y: -1 },
+            Direction::Right => Pos { x: 1, y: 0 },
+            Direction::Down => Pos { x: 0, y: 1 },
+            Direction::Left => Pos { x: -1, y: 0 },
+        }
+    }
+}
+
+impl Into<char> for Direction {
+    fn into(self) -> char {
+        match self {
+            Direction::Up => '^',
+            Direction::Right => '>',
+            Direction::Down => 'V',
+            Direction::Left => '<',
+        }
+    }
 }
