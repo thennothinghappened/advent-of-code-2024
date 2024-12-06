@@ -6,6 +6,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
+const UNVISITED: char = '.';
+const WALL: char = '#';
+
 fn part1(input: &str) -> PartResult {
     let mut grid = input
         .lines()
@@ -21,7 +24,7 @@ fn part1(input: &str) -> PartResult {
 
     'find_guard: for y in 0..grid.len() {
         for x in 0..grid[y].len() {
-            if grid[y][x] == '^' {
+            if grid[y][x] == guard_dir.into() {
                 guard_pos = Pos {
                     x: x as i32,
                     y: y as i32,
@@ -69,12 +72,12 @@ fn part1(input: &str) -> PartResult {
 
         let next_char = grid[next_pos.y as usize][next_pos.x as usize];
 
-        if next_char == '#' {
+        if next_char == WALL {
             guard_dir = guard_dir.turned_right();
             continue;
         }
 
-        if next_char != 'X' {
+        if next_char == UNVISITED {
             visited += 1;
         }
 
@@ -121,13 +124,13 @@ impl std::ops::Add<Direction> for Pos {
     type Output = Pos;
 
     fn add(self, rhs: Direction) -> Self::Output {
-        self + Into::<Pos>::into(rhs)
+        self + Pos::from(rhs)
     }
 }
 
-impl Into<(i32, i32)> for Pos {
-    fn into(self) -> (i32, i32) {
-        (self.x, self.y)
+impl From<Pos> for (i32, i32) {
+    fn from(value: Pos) -> (i32, i32) {
+        (value.x, value.y)
     }
 }
 
@@ -156,9 +159,9 @@ impl Direction {
     }
 }
 
-impl Into<Pos> for Direction {
-    fn into(self) -> Pos {
-        match self {
+impl From<Direction> for Pos {
+    fn from(value: Direction) -> Self {
+        match value {
             Direction::Up => Pos { x: 0, y: -1 },
             Direction::Right => Pos { x: 1, y: 0 },
             Direction::Down => Pos { x: 0, y: 1 },
@@ -167,9 +170,9 @@ impl Into<Pos> for Direction {
     }
 }
 
-impl Into<char> for Direction {
-    fn into(self) -> char {
-        match self {
+impl From<Direction> for char {
+    fn from(value: Direction) -> Self {
+        match value {
             Direction::Up => '^',
             Direction::Right => '>',
             Direction::Down => 'V',
