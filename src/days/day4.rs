@@ -18,10 +18,16 @@ const P2_CHECK_OFFSETS: &[(i32, i32)] = &[
 ];
 
 pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    Ok((part1(input)?, part2(input)?))
+
+	let char_matrix = input
+		.lines()
+		.map(|line| line.chars().collect())
+		.collect::<Vec<Vec<char>>>();
+
+    Ok((part1(&char_matrix)?, part2(&char_matrix)?))
 }
 
-fn part1(input: &str) -> Result<String, Box<dyn Error>> {
+fn part1(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
     let mut matches: usize = 0;
 
     // 1. Iterate over line, and each character.
@@ -29,11 +35,6 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
     // 3. Scan the 3x3 chars around it. For each that match the next char, continue until the whole
     //    match is found, or it isn't.
     // 4. If a match was found, increment matches.
-
-    let char_matrix = input
-        .lines()
-        .map(|line| line.chars().collect())
-        .collect::<Vec<Vec<char>>>();
 
     for y in 0..char_matrix.len() {
         for x in 0..char_matrix[y].len() {
@@ -70,13 +71,8 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
     Ok(matches.to_string())
 }
 
-fn part2(input: &str) -> Result<String, Box<dyn Error>> {
+fn part2(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
     let mut matches: usize = 0;
-
-    let char_matrix = input
-        .lines()
-        .map(|line| line.chars().collect())
-        .collect::<Vec<Vec<char>>>();
 
     for y in 1..char_matrix.len() - 1 {
         for x in 1..char_matrix[y].len() - 1 {
@@ -104,8 +100,6 @@ fn part2(input: &str) -> Result<String, Box<dyn Error>> {
 
                 found += 1;
             }
-
-			debug_assert!(found <= 2);
 
 			if found == 2 {
 				matches += 1;
