@@ -169,5 +169,11 @@ fn part1(input: &str) -> PartResult {
 }
 
 fn part2(input: &str) -> PartResult {
+    // 1. Let's map out their path as in part 1.
+    // 2. For each X, try placing a # there.
+    // 3. Record the pathfinding, rather than an X, store direction (bitwise mayhaps :P)
+    // 4. If we've travelled the same position twice in the same direction we've made a loop.
+    // 5. Output #loops.
+
     not_yet_implemented()
 }
