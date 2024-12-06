@@ -1,13 +1,13 @@
-use std::error::Error;
+use super::{DayResult, PartResult};
 
 const MIN_DEVIATION: i32 = 1;
 const MAX_DEVIATION: i32 = 3;
 
-pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
-fn part1(input: &str) -> Result<String, Box<dyn Error>> {
+fn part1(input: &str) -> PartResult {
     let num_reports_ok = input
         .lines()
         .map(str::split_whitespace)
@@ -22,7 +22,7 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
     Ok(num_reports_ok.to_string())
 }
 
-fn part2(input: &str) -> Result<String, Box<dyn Error>> {
+fn part2(input: &str) -> PartResult {
     let num_reports_ok = input
         .lines()
         .map(str::split_whitespace)

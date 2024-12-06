@@ -1,4 +1,4 @@
-use std::error::Error;
+use super::{DayResult, PartResult};
 
 const XMAS: &[char] = &['X', 'M', 'A', 'S'];
 
@@ -16,7 +16,7 @@ const P2_CHECK_OFFSETS: &[(i32, i32)] = &[
 	(-1,  1),				(1,  1),
 ];
 
-pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub(crate) fn solve(input: &str) -> DayResult {
     let char_matrix = input
         .lines()
         .map(|line| line.chars().collect())
@@ -25,7 +25,7 @@ pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     Ok((part1(&char_matrix)?, part2(&char_matrix)?))
 }
 
-fn part1(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
+fn part1(char_matrix: &Vec<Vec<char>>) -> PartResult {
     let mut matches: usize = 0;
 
     // 1. Iterate over line, and each character.
@@ -69,7 +69,7 @@ fn part1(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
     Ok(matches.to_string())
 }
 
-fn part2(char_matrix: &Vec<Vec<char>>) -> Result<String, Box<dyn Error>> {
+fn part2(char_matrix: &Vec<Vec<char>>) -> PartResult {
     let mut matches: usize = 0;
 
     for y in 1..char_matrix.len() - 1 {

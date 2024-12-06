@@ -1,10 +1,12 @@
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
-pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+use super::{DayResult, PartResult};
+
+pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
-fn part1(input: &str) -> Result<String, Box<dyn Error>> {
+fn part1(input: &str) -> PartResult {
     // 1. Create two arrays.
     // 2. Iterate over each line of input, putting LHS of whitespace into arr1, RHS into arr2 (converted to numbers.)
     // 3. Get the smallest of both arrays, += the absolute difference to output.
@@ -34,7 +36,7 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
     Ok(sum.to_string())
 }
 
-fn part2(input: &str) -> Result<String, Box<dyn Error>> {
+fn part2(input: &str) -> PartResult {
     let mut left_occurrences: HashMap<usize, usize> = HashMap::new();
     let mut right_occurrences: HashMap<usize, usize> = HashMap::new();
     let (left, right): (Vec<usize>, Vec<usize>) = input.lines().map(parse_line).unzip();

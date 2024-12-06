@@ -1,10 +1,12 @@
 use std::error::Error;
 
-pub(crate) fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+use super::{DayResult, PartResult};
+
+pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
-fn part1(input: &str) -> Result<String, Box<dyn Error>> {
+fn part1(input: &str) -> PartResult {
     let mut rem_input = input;
     let mut sum = 0;
 
@@ -41,9 +43,9 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
     Ok(sum.to_string())
 }
 
-fn part2(input: &str) -> Result<String, Box<dyn Error>> {
+fn part2(input: &str) -> PartResult {
     let mut rem_input = input;
-	let mut bother = true;
+    let mut bother = true;
     let mut sum = 0;
 
     loop {
@@ -51,24 +53,28 @@ fn part2(input: &str) -> Result<String, Box<dyn Error>> {
             break;
         };
 
-		match bother {
-			true => if let Some(next_dont) = rem_input.find("don't()") {
-				if next_dont < next_match {
-					bother = false;
-				}
-			},
-			false => if let Some(next_do) = rem_input.find("do()") {
-				if next_do < next_match {
-					bother = true;
-				}
-			},
-		}
+        match bother {
+            true => {
+                if let Some(next_dont) = rem_input.find("don't()") {
+                    if next_dont < next_match {
+                        bother = false;
+                    }
+                }
+            }
+            false => {
+                if let Some(next_do) = rem_input.find("do()") {
+                    if next_do < next_match {
+                        bother = true;
+                    }
+                }
+            }
+        }
 
         rem_input = &rem_input[next_match + 4..];
 
-		if !bother {
-			continue;
-		}
+        if !bother {
+            continue;
+        }
 
         let Some(comma) = rem_input.find(",") else {
             continue;
