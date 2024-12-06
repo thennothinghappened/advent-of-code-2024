@@ -1,7 +1,6 @@
-
-mod utils;
-mod input;
 mod days;
+mod input;
+mod utils;
 
 fn main() {
     let inputs_cache_path =
@@ -15,8 +14,7 @@ fn main() {
         .map(|(day, day_func)| {
             println!("--- Day {} ---", day);
 
-            match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
-            {
+            match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path) {
                 Ok(input) => day_func(&input),
                 Err(err) => Err(err.into()),
             }
