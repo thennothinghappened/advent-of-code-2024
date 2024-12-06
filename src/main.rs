@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 mod days;
 mod input;
 mod utils;
@@ -14,12 +16,17 @@ fn main() {
         .map(|(day, day_func)| {
             println!("--- Day {} ---", day);
 
-            match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path) {
+            let now = Instant::now();
+
+            let result = match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
+            {
                 Ok(input) => day_func(&input),
                 Err(err) => Err(err.into()),
-            }
+            };
+
+            (result, now.elapsed())
         })
-        .for_each(|result| {
+        .for_each(|(result, elapsed)| {
             match result {
                 Ok((part1, part2)) => {
                     println!("Part 1 :: {}", part1);
@@ -27,6 +34,7 @@ fn main() {
                 }
                 Err(err) => println!("Error! {:#?}", err),
             }
+            println!("Took {}us", elapsed.as_micros());
             println!();
         });
 }
