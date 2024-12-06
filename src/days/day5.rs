@@ -8,7 +8,7 @@ use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut lines = input.lines().into_iter();
-    let mut dependencies = HashMap::<usize, HashSet<usize>>::new();
+    let mut dependencies = HashMap::<usize, Vec<usize>>::new();
 
     lines
         .by_ref()
@@ -23,8 +23,8 @@ pub(crate) fn solve(input: &str) -> DayResult {
         .for_each(|(page, dependency)| {
             dependencies
                 .entry(page)
-                .or_insert_with(|| HashSet::new())
-                .insert(dependency);
+                .or_insert_with(|| Vec::new())
+                .push(dependency);
         });
 
     let updates = lines
@@ -42,21 +42,21 @@ pub(crate) fn solve(input: &str) -> DayResult {
     ))
 }
 
-fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
+fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
     let correct = updates
-        .iter()
+        .into_iter()
         .filter(|update| is_sorted(update, dependencies));
     let sum_middle_pages: usize = correct.map(|update| update[update.len() / 2]).sum();
 
     Ok(sum_middle_pages.to_string())
 }
 
-fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
+fn part2(dependencies: &HashMap<usize, Vec<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
     // We're working under the assumption that there IS always a valid order, and work to achieve
     // that.
 
     let sum_middle_pages = updates
-        .iter()
+        .into_iter()
         .filter(|update| !is_sorted(update, dependencies))
         .map(|update| update.clone())
         .map(|mut update| {
@@ -69,7 +69,7 @@ fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>
     Ok(sum_middle_pages.to_string())
 }
 
-fn sort_pages(dependencies: &HashMap<usize, HashSet<usize>>, a: &usize, b: &usize) -> Ordering {
+fn sort_pages(dependencies: &HashMap<usize, Vec<usize>>, a: &usize, b: &usize) -> Ordering {
     if let Some(deps_for_a) = dependencies.get(a) {
         if deps_for_a.contains(b) {
             return Ordering::Greater;
@@ -86,6 +86,6 @@ fn sort_pages(dependencies: &HashMap<usize, HashSet<usize>>, a: &usize, b: &usiz
 }
 
 /// Determine whether an update list satisfies the dependencies.
-fn is_sorted(update: &Vec<usize>, dependencies: &HashMap<usize, HashSet<usize>>) -> bool {
+fn is_sorted(update: &Vec<usize>, dependencies: &HashMap<usize, Vec<usize>>) -> bool {
     update.is_sorted_by(|a, b| sort_pages(dependencies, a, b).is_lt())
 }
