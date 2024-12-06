@@ -37,7 +37,6 @@ fn part1(input: &str) -> Result<String, Box<dyn Error>> {
             continue;
         };
 
-        println!("Match :: {} * {}", lhs, rhs);
         sum += lhs * rhs;
     }
 
@@ -93,7 +92,6 @@ fn part2(input: &str) -> Result<String, Box<dyn Error>> {
             continue;
         };
 
-        println!("Match :: {} * {}", lhs, rhs);
         sum += lhs * rhs;
     }
 
