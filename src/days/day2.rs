@@ -1,4 +1,4 @@
-use std::{char::MAX, cmp, error::Error, f32::MIN, ops::Deref};
+use std::error::Error;
 
 const MIN_DEVIATION: i32 = 1;
 const MAX_DEVIATION: i32 = 3;
@@ -32,28 +32,24 @@ fn part2(input: &str) -> Result<String, Box<dyn Error>> {
         })
         .into_iter()
         .filter(|report| {
-			
-			if evaluate_report(&report) {
-				return true;
-			}
-			
-			// fuck it, brute force it, i'm quite lost lol.
-			let mut mutable_report = report.clone();
+            if evaluate_report(&report) {
+                return true;
+            }
 
-			for i in 0..report.len() {
+            // fuck it, brute force it, i'm quite lost lol.
+            let mut mutable_report = report.clone();
 
-				let entry = mutable_report.remove(i);
+            for i in 0..report.len() {
+                let entry = mutable_report.remove(i);
 
-				if evaluate_report(&mutable_report) {
-					return true;
-				}
+                if evaluate_report(&mutable_report) {
+                    return true;
+                }
 
-				mutable_report.insert(i, entry);
+                mutable_report.insert(i, entry);
+            }
 
-			}
-
-			return false;
-
+            return false;
         })
         .count();
 
