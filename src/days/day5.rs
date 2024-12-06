@@ -45,7 +45,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
 fn part1(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
     let correct = updates
         .iter()
-        .filter(|update| is_valid(update, dependencies));
+        .filter(|update| is_sorted(update, dependencies));
     let sum_middle_pages: usize = correct.map(|update| update[update.len() / 2]).sum();
 
     Ok(sum_middle_pages.to_string())
@@ -57,25 +57,10 @@ fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>
 
     let sum_middle_pages = updates
         .iter()
-        .filter(|update| !is_valid(update, dependencies))
+        .filter(|update| !is_sorted(update, dependencies))
         .map(|update| update.clone())
         .map(|mut update| {
-            update.sort_unstable_by(|a, b| {
-                if let Some(deps_for_a) = dependencies.get(a) {
-                    if deps_for_a.contains(b) {
-                        return Ordering::Greater;
-                    }
-                }
-
-                if let Some(deps_for_b) = dependencies.get(b) {
-                    if deps_for_b.contains(a) {
-                        return Ordering::Less;
-                    }
-                }
-
-                Ordering::Equal
-            });
-
+            update.sort_unstable_by(|a, b| sort_pages(dependencies, a, b));
             update
         })
         .map(|update| update[update.len() / 2])
@@ -84,25 +69,23 @@ fn part2(dependencies: &HashMap<usize, HashSet<usize>>, updates: &Vec<Vec<usize>
     Ok(sum_middle_pages.to_string())
 }
 
-/// Determine whether an update list satisfies the dependencies.
-fn is_valid(update: &Vec<usize>, dependencies: &HashMap<usize, HashSet<usize>>) -> bool {
-    let mut seen_pages = HashSet::<&usize>::new();
-
-    for page in update.iter() {
-        seen_pages.insert(page);
-
-        let Some(deps) = dependencies.get(page) else {
-            continue;
-        };
-
-        if deps
-            .iter()
-            .filter(|dep| update.contains(dep))
-            .any(|dep| !seen_pages.contains(dep))
-        {
-            return false;
+fn sort_pages(dependencies: &HashMap<usize, HashSet<usize>>, a: &usize, b: &usize) -> Ordering {
+    if let Some(deps_for_a) = dependencies.get(a) {
+        if deps_for_a.contains(b) {
+            return Ordering::Greater;
         }
     }
 
-    true
+    if let Some(deps_for_b) = dependencies.get(b) {
+        if deps_for_b.contains(a) {
+            return Ordering::Less;
+        }
+    }
+
+    Ordering::Equal
+}
+
+/// Determine whether an update list satisfies the dependencies.
+fn is_sorted(update: &Vec<usize>, dependencies: &HashMap<usize, HashSet<usize>>) -> bool {
+    update.is_sorted_by(|a, b| sort_pages(dependencies, a, b).is_lt())
 }
