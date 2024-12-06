@@ -15,15 +15,13 @@ fn main() {
         .map(|(day, day_func)| {
             println!("--- Day {} ---", day);
 
-            let result = match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
+            match input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)
             {
                 Ok(input) => day_func(&input),
                 Err(err) => Err(err.into()),
-            };
-
-            (day, result)
+            }
         })
-        .for_each(|(day, result)| {
+        .for_each(|result| {
             match result {
                 Ok((part1, part2)) => {
                     println!("Part 1 :: {}", part1);
