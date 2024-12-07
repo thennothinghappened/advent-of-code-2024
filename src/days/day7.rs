@@ -1,25 +1,27 @@
+use std::time::Instant;
+
 use itertools::Itertools;
 use rayon::{
-    iter::{IntoParallelRefIterator, ParallelIterator},
+    iter::{
+        IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
+    },
     str::ParallelString,
 };
 
 use super::{DayResult, PartResult};
 
+/// A reasonable, though picked from mid-air, value for which we bother to cache op permutations up
+/// to. If we go over this, the world explodes. Raise as needed.
+const REASONABLE_MAX_CACHE_LEN: usize = 12;
+
 pub(crate) fn solve(input: &str) -> DayResult {
     let equations: Vec<Equation> = input
         .par_lines()
         .map(|line| {
-            let mut split = line.split(": ");
+            let split = line.split_once(": ").unwrap();
 
-            let result: usize = split.next().unwrap().parse().unwrap();
-            let operands: Vec<usize> = split
-                .next()
-                .unwrap()
-                .split(" ")
-                .map(str::parse)
-                .try_collect()
-                .unwrap();
+            let result: usize = split.0.parse().unwrap();
+            let operands: Vec<usize> = split.1.split(" ").map(str::parse).try_collect().unwrap();
 
             Equation { result, operands }
         })
@@ -30,10 +32,11 @@ pub(crate) fn solve(input: &str) -> DayResult {
 
 fn part1(equations: &[Equation]) -> PartResult {
     const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul];
+    let allowed_ops_cache = make_ops_cache(ALLOWED_OPS);
 
     let sum: usize = equations
         .par_iter()
-        .filter(|equation| can_solve(&equation, ALLOWED_OPS))
+        .filter(|equation| can_solve(&equation, &allowed_ops_cache))
         .map(|equation| equation.result)
         .sum();
 
@@ -42,42 +45,55 @@ fn part1(equations: &[Equation]) -> PartResult {
 
 fn part2(equations: &[Equation]) -> PartResult {
     const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul, Op::Concat];
+    let now = Instant::now();
+    let allowed_ops_cache = make_ops_cache(ALLOWED_OPS);
+
+    println!("Took {}µs to build cache", now.elapsed().as_micros());
 
     let sum: usize = equations
         .par_iter()
-        .filter(|equation| can_solve(&equation, ALLOWED_OPS))
+        .filter(|equation| can_solve(&equation, &allowed_ops_cache))
         .map(|equation| equation.result)
         .sum();
 
     Ok(sum.to_string())
 }
 
-fn can_solve(equation: &Equation, ops: &[Op]) -> bool {
+fn can_solve(equation: &Equation, ops_cache: &[Vec<Vec<&Op>>]) -> bool {
     let num_operators = equation.operands.len() - 1;
 
-    (0..num_operators)
-        .map(|_| ops)
-        .multi_cartesian_product()
-        .any(|combo| {
-            let mut sum = equation.operands[0];
+    ops_cache[num_operators].iter().any(|combo| {
+        let mut sum = equation.operands[0];
 
-            for op_index in 0..num_operators {
-                if sum > equation.result {
-                    break;
-                }
-
-                let rhs = equation.operands[op_index + 1];
-                let op = combo[op_index];
-
-                sum = op.perform(sum, rhs);
+        for op_index in 0..num_operators {
+            if sum > equation.result {
+                break;
             }
 
-            if sum == equation.result {
-                return true;
-            }
+            let rhs = equation.operands[op_index + 1];
+            let op = combo[op_index];
 
-            false
+            sum = op.perform(sum, rhs);
+        }
+
+        if sum == equation.result {
+            return true;
+        }
+
+        false
+    })
+}
+
+fn make_ops_cache(ops: &[Op]) -> Vec<Vec<Vec<&Op>>> {
+    (0..REASONABLE_MAX_CACHE_LEN)
+        .into_par_iter()
+        .map(|num_ops| {
+            (0..num_ops)
+                .map(|_| ops)
+                .multi_cartesian_product()
+                .collect_vec()
         })
+        .collect()
 }
 
 struct Equation {
