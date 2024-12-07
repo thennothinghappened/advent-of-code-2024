@@ -3,7 +3,7 @@
 use core::str;
 use std::{
     error::Error,
-    fmt::{Display, Write as _},
+    fmt::Display as _,
     fs::{create_dir, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
