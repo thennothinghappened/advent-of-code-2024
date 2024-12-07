@@ -38,7 +38,7 @@ const WALL: u8 = b'#';
 const GUARD_INITIAL: u8 = b'^';
 
 fn part1(
-    grid: &Vec<u8>,
+    grid: &[u8],
     grid_width: usize,
     grid_height: usize,
     initial_pos: Pos,
@@ -122,7 +122,7 @@ fn part2(
 /// `visit_grid`. If the guard exited the map, the number of steps is returned. If they got stuck in
 /// a loop however, [None](None) is returned.
 fn trace_path(
-    grid: &Vec<u8>,
+    grid: &[u8],
     grid_width: usize,
     grid_height: usize,
     visit_grid: &mut Vec<BitFlags<Direction>>,
@@ -303,7 +303,7 @@ trait FlatIndexMut<T>: FlatIndex<T> {
     fn flat_index_mut(&mut self, width: usize, index: T) -> &mut Self::Output;
 }
 
-impl<T> FlatIndex<Pos> for Vec<T> {
+impl<T> FlatIndex<Pos> for [T] {
     type Output = T;
 
     fn flat_index(&self, width: usize, index: Pos) -> &Self::Output {
@@ -311,7 +311,7 @@ impl<T> FlatIndex<Pos> for Vec<T> {
     }
 }
 
-impl<T> FlatIndexMut<Pos> for Vec<T> {
+impl<T> FlatIndexMut<Pos> for [T] {
     fn flat_index_mut(&mut self, width: usize, index: Pos) -> &mut Self::Output {
         &mut self[index.x as usize + (index.y as usize) * width]
     }

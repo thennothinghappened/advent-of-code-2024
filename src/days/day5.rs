@@ -38,7 +38,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
     ))
 }
 
-fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
+fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
     let correct = updates
         .into_iter()
         .filter(|update| is_sorted(update, dependencies));
@@ -47,7 +47,7 @@ fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &Vec<Vec<usize>>) -
     Ok(sum_middle_pages.to_string())
 }
 
-fn part2(dependencies: &HashMap<usize, Vec<usize>>, updates: &Vec<Vec<usize>>) -> PartResult {
+fn part2(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
     // We're working under the assumption that there IS always a valid order, and work to achieve
     // that.
 
@@ -82,6 +82,6 @@ fn sort_pages(dependencies: &HashMap<usize, Vec<usize>>, a: &usize, b: &usize) -
 }
 
 /// Determine whether an update list satisfies the dependencies.
-fn is_sorted(update: &Vec<usize>, dependencies: &HashMap<usize, Vec<usize>>) -> bool {
+fn is_sorted(update: &[usize], dependencies: &HashMap<usize, Vec<usize>>) -> bool {
     update.is_sorted_by(|a, b| sort_pages(dependencies, a, b).is_lt())
 }

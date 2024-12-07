@@ -25,7 +25,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(&char_matrix)?, part2(&char_matrix)?))
 }
 
-fn part1(char_matrix: &Vec<Vec<char>>) -> PartResult {
+fn part1(char_matrix: &[Vec<char>]) -> PartResult {
     let mut matches: usize = 0;
 
     // 1. Iterate over line, and each character.
@@ -69,7 +69,7 @@ fn part1(char_matrix: &Vec<Vec<char>>) -> PartResult {
     Ok(matches.to_string())
 }
 
-fn part2(char_matrix: &Vec<Vec<char>>) -> PartResult {
+fn part2(char_matrix: &[Vec<char>]) -> PartResult {
     let mut matches: usize = 0;
 
     for y in 1..char_matrix.len() - 1 {

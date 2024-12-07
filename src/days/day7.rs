@@ -28,7 +28,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(&equations)?, part2(&equations)?))
 }
 
-fn part1(equations: &Vec<Equation>) -> PartResult {
+fn part1(equations: &[Equation]) -> PartResult {
     const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul];
 
     let sum: usize = equations
@@ -40,7 +40,7 @@ fn part1(equations: &Vec<Equation>) -> PartResult {
     Ok(sum.to_string())
 }
 
-fn part2(equations: &Vec<Equation>) -> PartResult {
+fn part2(equations: &[Equation]) -> PartResult {
     const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul, Op::Concat];
 
     let sum: usize = equations

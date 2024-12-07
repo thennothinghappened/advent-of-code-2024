@@ -56,7 +56,7 @@ fn part2(input: &str) -> PartResult {
     Ok(num_reports_ok.to_string())
 }
 
-fn evaluate_report(report: &Vec<i32>) -> bool {
+fn evaluate_report(report: &[i32]) -> bool {
     let mut dir: i32 = 0;
 
     for i in 1..report.len() {
