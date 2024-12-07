@@ -6,13 +6,9 @@ use super::{DayResult, PartResult};
 use crate::utils::not_yet_implemented;
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
-    let sum: usize = input
+    let equations: Vec<Equation> = input
         .lines()
-        .filter_map(|line| {
+        .map(|line| {
             let mut split = line.split(": ");
 
             let result: usize = split.next().unwrap().parse().unwrap();
@@ -24,37 +20,48 @@ fn part1(input: &str) -> PartResult {
                 .try_collect()
                 .unwrap();
 
-            let num_op_bits = operands.len();
+            Equation { result, operands }
+        })
+        .collect();
+
+    Ok((part1(&equations)?, part2(&equations)?))
+}
+
+fn part1(equations: &Vec<Equation>) -> PartResult {
+    let sum: usize = equations
+        .iter()
+        .filter_map(|equation| {
+            let num_op_bits = equation.operands.len();
             let num_combos = 2_usize.pow((num_op_bits - 1) as u32);
 
             println!("-------------");
             println!(
                 "Attempt :: Desired Result = {} from operands {:?} (#possible combos = {})",
-                result, operands, num_combos
+                equation.result, equation.operands, num_combos
             );
 
             for combo in 0..num_combos {
-                let mut sum = operands[0];
+                let mut sum = equation.operands[0];
 
                 for op_index in 0..num_op_bits - 1 {
-                    if sum > result {
+                    if sum > equation.result {
                         break;
                     }
 
-                    let rhs = operands[op_index + 1];
+                    let rhs = equation.operands[op_index + 1];
                     let op = Op::extract_from(combo, op_index);
 
                     sum = op.perform(sum, rhs);
                 }
 
-                if sum == result {
+                if sum == equation.result {
                     println!(
                         "Success! :: Using combination {:?}",
                         (0..num_op_bits - 1)
                             .map(|op_index| Op::extract_from(combo, op_index))
                             .collect_vec()
                     );
-                    return Some(result);
+                    return Some(equation.result);
                 }
             }
 
@@ -65,11 +72,15 @@ fn part1(input: &str) -> PartResult {
     Ok(sum.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
+fn part2(equations: &Vec<Equation>) -> PartResult {
     not_yet_implemented()
 }
 
-#[repr(u8)]
+struct Equation {
+    result: usize,
+    operands: Vec<usize>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Op {
     Add,
@@ -95,15 +106,6 @@ impl From<usize> for Op {
             0 => Op::Add,
             1 => Op::Mul,
             _ => panic!("Expected 1-bit number for operator!"),
-        }
-    }
-}
-
-impl std::fmt::Display for Op {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Op::Add => write!(f, "+"),
-            Op::Mul => write!(f, "*"),
         }
     }
 }
