@@ -25,7 +25,7 @@ fn part1(input: &str) -> PartResult {
                 .unwrap();
 
             let num_op_bits = operands.len();
-            let num_combos = 2_usize.pow(num_op_bits as u32);
+            let num_combos = 2_usize.pow((num_op_bits - 1) as u32);
 
             println!("-------------");
             println!(
