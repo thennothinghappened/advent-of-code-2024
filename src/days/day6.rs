@@ -1,5 +1,6 @@
 use super::{DayResult, PartResult};
 use enumflags2::BitFlags;
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut grid = input
@@ -47,11 +48,12 @@ fn part1(
     let mut visit_grid = vec![BitFlags::<Direction>::empty(); grid_width * grid_height];
     let visited = trace_path(
         &grid,
+        &mut visit_grid,
         grid_width,
         grid_height,
-        &mut visit_grid,
         initial_pos,
         initial_dir,
+        None,
     )
     .expect("Somehow there was no valid exit!");
 
@@ -74,46 +76,34 @@ fn part2(
     let mut visit_grid = vec![BitFlags::<Direction>::empty(); grid_width * grid_height];
     trace_path(
         &grid,
+        &mut visit_grid,
         grid_width,
         grid_height,
-        &mut visit_grid,
         initial_pos,
         initial_dir,
+        None,
     );
 
-    let targets = visit_grid
-        .iter()
+    let valid_targets = visit_grid
+        .par_iter()
         .enumerate()
         .filter_map(|(i, col)| match col.is_empty() {
             true => None,
             false => Some(Pos::from_flat_index(grid_width, i)),
         })
         .filter(|&pos| pos != initial_pos)
-        .collect::<Vec<Pos>>();
-
-    let mut valid_targets = 0;
-
-    for target in targets {
-        // Refresh the visit positions grid.
-        visit_grid
-            .iter_mut()
-            .for_each(|col| *col = BitFlags::empty());
-
-        *grid.flat_index_mut(grid_width, target) = WALL;
-
-        if let None = trace_path(
-            &grid,
-            grid_width,
-            grid_height,
-            &mut visit_grid,
-            initial_pos,
-            initial_dir,
-        ) {
-            valid_targets += 1;
-        }
-
-        *grid.flat_index_mut(grid_width, target) = FLOOR;
-    }
+        .filter(|&pos| {
+            trace_path(
+                &grid,
+                &mut vec![BitFlags::<Direction>::empty(); grid_width * grid_height],
+                grid_width,
+                grid_height,
+                initial_pos,
+                initial_dir,
+                Some(pos),
+            ) == None
+        })
+        .count();
 
     Ok(valid_targets.to_string())
 }
@@ -123,50 +113,25 @@ fn part2(
 /// a loop however, [None](None) is returned.
 fn trace_path(
     grid: &[u8],
+    visit_grid: &mut [BitFlags<Direction>],
     grid_width: usize,
     grid_height: usize,
-    visit_grid: &mut [BitFlags<Direction>],
     initial_pos: Pos,
     initial_dir: Direction,
+    additional_wall: Option<Pos>,
 ) -> Option<usize> {
     let mut pos = initial_pos;
     let mut dir = initial_dir;
     let mut visit_count = 1;
 
     loop {
-        // println!(
-        //     "{}\nGuard :: (x: {}, y: {}) :: facing {:?} :: Spot contains {}\n",
-        //     grid.chunks(grid_width)
-        //         .zip(visit_grid.chunks(grid_width))
-        //         .map(|(map_row, visits_row)| {
-        //             let mut str = String::new();
-
-        //             for i in 0..grid_width {
-        //                 let visits_col = visits_row[i];
-
-        //                 if !visits_col.is_empty() {
-        //                     str.push('X');
-        //                 } else {
-        //                     str.push(map_row[i]);
-        //                 }
-        //             }
-
-        //             str
-        //         })
-        //         .collect::<Vec<String>>()
-        //         .join("\n"),
-        //     pos.x,
-        //     pos.y,
-        //     dir,
-        //     visit_grid.flat_index(grid_width, pos)
-        // );
-
         if visit_grid.flat_index(grid_width, pos).contains(dir) {
             // We've been here before!
             return None;
         }
 
         *visit_grid.flat_index_mut(grid_width, pos) |= dir;
+
         let next_pos = pos + dir;
 
         if !next_pos.is_positive()
@@ -177,7 +142,9 @@ fn trace_path(
             break;
         }
 
-        if *grid.flat_index(grid_width, next_pos) == WALL {
+        if *grid.flat_index(grid_width, next_pos) == WALL
+            || additional_wall.is_some_and(|it| it == next_pos)
+        {
             dir = dir.turned_right();
             continue;
         }
