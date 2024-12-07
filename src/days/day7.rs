@@ -5,7 +5,6 @@ use rayon::{
 };
 
 use super::{DayResult, PartResult};
-use crate::utils::not_yet_implemented;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let equations: Vec<Equation> = input
