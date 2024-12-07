@@ -34,7 +34,7 @@ fn main() {
                 }
                 Err(err) => println!("Error! {:#?}", err),
             }
-            println!("Took {}us", elapsed.as_micros());
+            println!("Took {}µs", elapsed.as_micros());
             println!();
         });
 }
