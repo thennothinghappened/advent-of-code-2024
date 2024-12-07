@@ -1,4 +1,6 @@
-use crate::utils::not_yet_implemented;
+use std::ops::{Index, IndexMut};
+
+use enumflags2::BitFlags;
 
 use super::{DayResult, PartResult};
 
@@ -6,8 +8,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
-const UNVISITED: char = '.';
+const FLOOR: char = '.';
 const WALL: char = '#';
+const GUARD_INITIAL: char = '^';
 
 fn part1(input: &str) -> PartResult {
     let mut grid = input
@@ -47,19 +50,7 @@ fn part1(input: &str) -> PartResult {
         // We don't account for the guard getting stuck, as the instructions don't mention this case
         // so presumably it does not occur. :)
 
-        grid[guard_pos.y as usize][guard_pos.x as usize] = 'X';
-
-        #[cfg(debug_assertions)]
-        println!(
-            "{}\nGuard :: (x: {}, y: {}) :: facing {:?}\n",
-            grid.iter()
-                .map(|line| line.iter().collect::<String>())
-                .collect::<Vec<String>>()
-                .join("\n"),
-            guard_pos.x,
-            guard_pos.y,
-            guard_dir
-        );
+        grid[guard_pos.y as usize][guard_pos.x as usize] = guard_dir.into();
 
         let next_pos = guard_pos + guard_dir;
 
@@ -77,7 +68,7 @@ fn part1(input: &str) -> PartResult {
             continue;
         }
 
-        if next_char == UNVISITED {
+        if next_char == FLOOR {
             visited += 1;
         }
 
@@ -89,12 +80,114 @@ fn part1(input: &str) -> PartResult {
 
 fn part2(input: &str) -> PartResult {
     // 1. Let's map out their path as in part 1.
-    // 2. For each X, try placing a # there.
+    // 2. For each visited position, try placing a wall there.
     // 3. Record the pathfinding, rather than an X, store direction (bitwise mayhaps :P)
     // 4. If we've travelled the same position twice in the same direction we've made a loop.
     // 5. Output #loops.
 
-    not_yet_implemented()
+    let mut grid = input
+        .lines()
+        .map(|row| row.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let mut visit_grid = grid
+        .iter()
+        .map(|row| std::vec::from_elem(BitFlags::<Direction>::empty(), row.len()))
+        .collect::<Vec<_>>();
+
+    let initial_dir = Direction::Up;
+    let initial_pos = grid
+        .iter()
+        .enumerate()
+        .find_map(|(y, row)| {
+            row.iter().enumerate().find_map(|(x, &c)| match c {
+                GUARD_INITIAL => Some(Pos {
+                    x: x as i32,
+                    y: y as i32,
+                }),
+                _ => None,
+            })
+        })
+        .expect("Guard must have an initial position!");
+
+    grid[initial_pos] = FLOOR;
+    trace_path(&grid, &mut visit_grid, initial_pos, initial_dir);
+
+    let targets = visit_grid
+        .iter()
+        .enumerate()
+        .flat_map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .filter_map(move |(x, col)| match col.is_empty() {
+                    true => None,
+                    false => Some(Pos {
+                        x: x as i32,
+                        y: y as i32,
+                    }),
+                })
+                .filter(|&pos| pos != initial_pos)
+        })
+        .collect::<Vec<Pos>>();
+
+    let mut valid_targets = 0;
+
+    for target in targets {
+        // Refresh the visit positions grid.
+        visit_grid
+            .iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|col| *col = BitFlags::empty()));
+
+        grid[target] = WALL;
+
+        let causes_loop = trace_path(&grid, &mut visit_grid, initial_pos, initial_dir);
+        if causes_loop {
+            valid_targets += 1;
+        }
+
+        grid[target] = FLOOR;
+    }
+
+    Ok(valid_targets.to_string())
+}
+
+/// Traces the path of the guard from `initial_pos` facing `initial_dir`, recording their path to
+/// `visit_grid`. Returns whether the guard became stuck in an infinite loop.
+fn trace_path(
+    grid: &Vec<Vec<char>>,
+    visit_grid: &mut Vec<Vec<BitFlags<Direction>>>,
+    initial_pos: Pos,
+    initial_dir: Direction,
+) -> bool {
+    let mut pos = initial_pos;
+    let mut dir = initial_dir;
+
+    let grid_width = grid[pos.y as usize].len() as i32;
+    let grid_height = grid.len() as i32;
+
+    loop {
+        if visit_grid[pos].contains(dir) {
+            // We've been here before!
+            return true;
+        }
+
+        let next_pos = pos + dir;
+        visit_grid[pos] |= dir;
+
+        if !next_pos.is_positive() || next_pos.y >= grid_height || next_pos.x >= grid_width {
+            // Exiting the map.
+            break;
+        }
+
+        if grid[next_pos] == WALL {
+            dir = dir.turned_right();
+            continue;
+        }
+
+        pos = next_pos;
+    }
+
+    false
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -140,7 +233,9 @@ impl From<(i32, i32)> for Pos {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[enumflags2::bitflags]
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
     Up,
     Right,
@@ -178,5 +273,19 @@ impl From<Direction> for char {
             Direction::Down => 'V',
             Direction::Left => '<',
         }
+    }
+}
+
+impl<T> Index<Pos> for Vec<Vec<T>> {
+    type Output = T;
+
+    fn index(&self, index: Pos) -> &Self::Output {
+        &self[index.y as usize][index.x as usize]
+    }
+}
+
+impl<T> IndexMut<Pos> for Vec<Vec<T>> {
+    fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
+        &mut self[index.y as usize][index.x as usize]
     }
 }
