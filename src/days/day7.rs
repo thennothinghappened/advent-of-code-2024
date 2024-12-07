@@ -82,7 +82,6 @@ struct Equation {
     operands: Vec<usize>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Op {
     Add,
     Mul,
@@ -98,20 +97,6 @@ impl Op {
                 let num_digits_rhs = rhs.checked_ilog10().unwrap_or(0) + 1;
                 lhs * 10_usize.pow(num_digits_rhs) + rhs
             }
-        }
-    }
-
-    fn extract_from(bits: usize, index: usize) -> Self {
-        Op::from((bits >> index) & 1)
-    }
-}
-
-impl From<usize> for Op {
-    fn from(value: usize) -> Self {
-        match value {
-            0 => Op::Add,
-            1 => Op::Mul,
-            _ => panic!("Expected 1-bit number for operator!"),
         }
     }
 }
