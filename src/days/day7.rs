@@ -75,7 +75,46 @@ fn part1(equations: &Vec<Equation>) -> PartResult {
 }
 
 fn part2(equations: &Vec<Equation>) -> PartResult {
-    not_yet_implemented()
+    let sum: usize = equations
+        .iter()
+        .filter_map(|equation| {
+            let num_operators = equation.operands.len() - 1;
+            let num_combos = 2_usize.pow(num_operators as u32);
+
+            println!("-------------");
+            println!(
+                "Attempt :: Desired Result = {} from operands {:?} (#possible combos = {})",
+                equation.result, equation.operands, num_combos
+            );
+
+            for combo in (0..num_operators)
+                .map(|_| [Op::Add, Op::Mul, Op::Concat])
+                .multi_cartesian_product()
+            {
+                let mut sum = equation.operands[0];
+
+                for op_index in 0..num_operators {
+                    if sum > equation.result {
+                        break;
+                    }
+
+                    let rhs = equation.operands[op_index + 1];
+                    let op = combo[op_index];
+
+                    sum = op.perform(sum, rhs);
+                }
+
+                if sum == equation.result {
+                    println!("Success! :: Using combination {:?}", combo);
+                    return Some(equation.result);
+                }
+            }
+
+            None
+        })
+        .sum();
+
+    Ok(sum.to_string())
 }
 
 struct Equation {
@@ -87,6 +126,7 @@ struct Equation {
 enum Op {
     Add,
     Mul,
+    Concat,
 }
 
 impl Op {
@@ -94,6 +134,10 @@ impl Op {
         match self {
             Op::Add => lhs + rhs,
             Op::Mul => lhs * rhs,
+            Op::Concat => {
+                let num_digits_rhs = rhs.checked_ilog10().unwrap_or(0) + 1;
+                lhs * 10_usize.pow(num_digits_rhs) + rhs
+            }
         }
     }
 
