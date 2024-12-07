@@ -76,11 +76,7 @@ fn can_solve(equation: &Equation, ops_cache: &[Vec<Vec<&Op>>]) -> bool {
             sum = op.perform(sum, rhs);
         }
 
-        if sum == equation.result {
-            return true;
-        }
-
-        false
+        sum == equation.result
     })
 }
 
