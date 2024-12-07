@@ -1,8 +1,4 @@
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    iter,
-};
+use std::{cmp::Ordering, collections::HashMap};
 
 use super::{DayResult, PartResult};
 

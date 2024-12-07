@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
