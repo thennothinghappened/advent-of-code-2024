@@ -10,10 +10,6 @@ use rayon::{
 
 use super::{DayResult, PartResult};
 
-/// A reasonable, though picked from mid-air, value for which we bother to cache op permutations up
-/// to. If we go over this, the world explodes. Raise as needed.
-const REASONABLE_MAX_CACHE_LEN: usize = 12;
-
 pub(crate) fn solve(input: &str) -> DayResult {
     let equations: Vec<Equation> = input
         .par_lines()
@@ -31,12 +27,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
 }
 
 fn part1(equations: &[Equation]) -> PartResult {
-    const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul];
-    let allowed_ops_cache = make_ops_cache(ALLOWED_OPS);
-
     let sum: usize = equations
-        .par_iter()
-        .filter(|equation| can_solve(&equation, &allowed_ops_cache))
+        .iter()
+        .filter(|equation| is_possible(equation.result, &equation.operands, &[Op::Add, Op::Mul]))
         .map(|equation| equation.result)
         .sum();
 
@@ -44,52 +37,60 @@ fn part1(equations: &[Equation]) -> PartResult {
 }
 
 fn part2(equations: &[Equation]) -> PartResult {
-    const ALLOWED_OPS: &[Op] = &[Op::Add, Op::Mul, Op::Concat];
-    let now = Instant::now();
-    let allowed_ops_cache = make_ops_cache(ALLOWED_OPS);
-
-    println!("Took {}µs to build cache", now.elapsed().as_micros());
-
     let sum: usize = equations
-        .par_iter()
-        .filter(|equation| can_solve(&equation, &allowed_ops_cache))
+        .iter()
+        .filter(|equation| {
+            is_possible(
+                equation.result,
+                &equation.operands,
+                &[Op::Add, Op::Mul, Op::Concat],
+            )
+        })
         .map(|equation| equation.result)
         .sum();
 
     Ok(sum.to_string())
 }
 
-fn can_solve(equation: &Equation, ops_cache: &[Vec<Vec<&Op>>]) -> bool {
-    let num_operators = equation.operands.len() - 1;
+fn is_possible(result: usize, operands: &[usize], ops: &[Op]) -> bool {
+    // 1. Iterate backwards from the last value.
+    // 2. For each step, we're looking to see if it is possible, using the operations we have, to
+    //    step backwards from the current value (starting at `result`), towards 0.
+    // 3. Discard impossibilities.
+    // 4. We should have reached 0 by the end.
 
-    ops_cache[num_operators].iter().any(|combo| {
-        let mut sum = equation.operands[0];
+    match operands {
+        [remaining @ .., last] => ops.iter().any(|op| {
+            match op {
+                // For addition, `x + last == result`, and there's no subtraction.
+                // Thus, `result - last == x`, and `x >= 0` must be true.
+                Op::Add => (*last <= result) && is_possible(result - last, remaining, ops),
 
-        for op_index in 0..num_operators {
-            if sum > equation.result {
-                break;
+                // For multiplication, `x * last == result`, thus `result / last == x`.
+                // `x` must be a valid integer (`result % last == 0`)
+                Op::Mul => (result % last == 0) && is_possible(result / last, remaining, ops),
+
+                // Concatenation means that `result` ends in `last`, and `x` is the rest of
+                // `result`'s digits.
+                Op::Concat => {
+                    // 1. Take the number of digits in `last`.
+                    // 2. `(result - last) / 10^digits_last == x`.
+                    // Therefore `(result - last) % 10^digits_last == 0`.
+
+                    if *last > result {
+                        return false;
+                    }
+
+                    let divisor = 10_usize.pow(last.checked_ilog10().unwrap_or(0) + 1);
+                    let result_removed_last = result - last;
+
+                    (result_removed_last % divisor == 0)
+                        && is_possible(result_removed_last / divisor, remaining, ops)
+                }
             }
-
-            let rhs = equation.operands[op_index + 1];
-            let op = combo[op_index];
-
-            sum = op.perform(sum, rhs);
-        }
-
-        sum == equation.result
-    })
-}
-
-fn make_ops_cache(ops: &[Op]) -> Vec<Vec<Vec<&Op>>> {
-    (0..REASONABLE_MAX_CACHE_LEN)
-        .into_par_iter()
-        .map(|num_ops| {
-            (0..num_ops)
-                .map(|_| ops)
-                .multi_cartesian_product()
-                .collect_vec()
-        })
-        .collect()
+        }),
+        [] => result == 0,
+    }
 }
 
 struct Equation {
