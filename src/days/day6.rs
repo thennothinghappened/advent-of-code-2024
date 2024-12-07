@@ -59,7 +59,7 @@ fn part1(
 }
 
 fn part2(
-    grid: &mut Vec<u8>,
+    grid: &mut [u8],
     grid_width: usize,
     grid_height: usize,
     initial_pos: Pos,
@@ -125,7 +125,7 @@ fn trace_path(
     grid: &[u8],
     grid_width: usize,
     grid_height: usize,
-    visit_grid: &mut Vec<BitFlags<Direction>>,
+    visit_grid: &mut [BitFlags<Direction>],
     initial_pos: Pos,
     initial_dir: Direction,
 ) -> Option<usize> {
