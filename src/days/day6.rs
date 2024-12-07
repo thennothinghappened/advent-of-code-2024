@@ -5,94 +5,9 @@ use enumflags2::BitFlags;
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-const FLOOR: char = '.';
-const WALL: char = '#';
-const GUARD_INITIAL: char = '^';
-
-fn part1(input: &str) -> PartResult {
     let mut grid = input
         .lines()
         .map(|line| line.chars().collect::<Vec<char>>())
-        .collect::<Vec<_>>();
-
-    let mut guard_pos = Pos {
-        x: i32::MAX,
-        y: i32::MAX,
-    };
-    let mut guard_dir = Direction::Up;
-    let mut visited = 1;
-
-    'find_guard: for y in 0..grid.len() {
-        for x in 0..grid[y].len() {
-            if grid[y][x] == guard_dir.into() {
-                guard_pos = Pos {
-                    x: x as i32,
-                    y: y as i32,
-                };
-
-                break 'find_guard;
-            }
-        }
-    }
-
-    debug_assert_ne!(
-        guard_pos,
-        Pos {
-            x: i32::MAX,
-            y: i32::MAX
-        }
-    );
-
-    loop {
-        // We don't account for the guard getting stuck, as the instructions don't mention this case
-        // so presumably it does not occur. :)
-
-        grid[guard_pos.y as usize][guard_pos.x as usize] = guard_dir.into();
-
-        let next_pos = guard_pos + guard_dir;
-
-        if !next_pos.is_positive()
-            || next_pos.y as usize >= grid.len()
-            || next_pos.x as usize >= grid[next_pos.y as usize].len()
-        {
-            break;
-        }
-
-        let next_char = grid[next_pos.y as usize][next_pos.x as usize];
-
-        if next_char == WALL {
-            guard_dir = guard_dir.turned_right();
-            continue;
-        }
-
-        if next_char == FLOOR {
-            visited += 1;
-        }
-
-        guard_pos = next_pos;
-    }
-
-    Ok(visited.to_string())
-}
-
-fn part2(input: &str) -> PartResult {
-    // 1. Let's map out their path as in part 1.
-    // 2. For each visited position, try placing a wall there.
-    // 3. Record the pathfinding, rather than an X, store direction (bitwise mayhaps :P)
-    // 4. If we've travelled the same position twice in the same direction we've made a loop.
-    // 5. Output #loops.
-
-    let mut grid = input
-        .lines()
-        .map(|row| row.chars().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
-
-    let mut visit_grid = grid
-        .iter()
-        .map(|row| std::vec::from_elem(BitFlags::<Direction>::empty(), row.len()))
         .collect::<Vec<_>>();
 
     let initial_dir = Direction::Up;
@@ -111,6 +26,41 @@ fn part2(input: &str) -> PartResult {
         .expect("Guard must have an initial position!");
 
     grid[initial_pos] = FLOOR;
+
+    Ok((
+        part1(&grid, initial_pos, initial_dir)?,
+        part2(&mut grid, initial_pos, initial_dir)?,
+    ))
+}
+
+const FLOOR: char = '.';
+const WALL: char = '#';
+const GUARD_INITIAL: char = '^';
+
+fn part1(grid: &Vec<Vec<char>>, initial_pos: Pos, initial_dir: Direction) -> PartResult {
+    let mut visit_grid = grid
+        .iter()
+        .map(|row| std::vec::from_elem(BitFlags::<Direction>::empty(), row.len()))
+        .collect::<Vec<_>>();
+
+    let visited = trace_path(&grid, &mut visit_grid, initial_pos, initial_dir)
+        .expect("Somehow there was no valid exit!");
+
+    Ok(visited.to_string())
+}
+
+fn part2(grid: &mut Vec<Vec<char>>, initial_pos: Pos, initial_dir: Direction) -> PartResult {
+    // 1. Let's map out their path as in part 1.
+    // 2. For each visited position, try placing a wall there.
+    // 3. Record the pathfinding, rather than an X, store direction (bitwise mayhaps :P)
+    // 4. If we've travelled the same position twice in the same direction we've made a loop.
+    // 5. Output #loops.
+
+    let mut visit_grid = grid
+        .iter()
+        .map(|row| std::vec::from_elem(BitFlags::<Direction>::empty(), row.len()))
+        .collect::<Vec<_>>();
+
     trace_path(&grid, &mut visit_grid, initial_pos, initial_dir);
 
     let targets = visit_grid
@@ -140,8 +90,7 @@ fn part2(input: &str) -> PartResult {
 
         grid[target] = WALL;
 
-        let causes_loop = trace_path(&grid, &mut visit_grid, initial_pos, initial_dir);
-        if causes_loop {
+        if let None = trace_path(&grid, &mut visit_grid, initial_pos, initial_dir) {
             valid_targets += 1;
         }
 
@@ -152,15 +101,17 @@ fn part2(input: &str) -> PartResult {
 }
 
 /// Traces the path of the guard from `initial_pos` facing `initial_dir`, recording their path to
-/// `visit_grid`. Returns whether the guard became stuck in an infinite loop.
+/// `visit_grid`. If the guard exited the map, the number of steps is returned. If they got stuck in
+/// a loop however, [None](None) is returned.
 fn trace_path(
     grid: &Vec<Vec<char>>,
     visit_grid: &mut Vec<Vec<BitFlags<Direction>>>,
     initial_pos: Pos,
     initial_dir: Direction,
-) -> bool {
+) -> Option<usize> {
     let mut pos = initial_pos;
     let mut dir = initial_dir;
+    let mut visit_count = 1;
 
     let grid_width = grid[pos.y as usize].len() as i32;
     let grid_height = grid.len() as i32;
@@ -168,7 +119,7 @@ fn trace_path(
     loop {
         if visit_grid[pos].contains(dir) {
             // We've been here before!
-            return true;
+            return None;
         }
 
         let next_pos = pos + dir;
@@ -184,10 +135,14 @@ fn trace_path(
             continue;
         }
 
+        if visit_grid[next_pos].is_empty() {
+            visit_count += 1;
+        }
+
         pos = next_pos;
     }
 
-    false
+    Some(visit_count)
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
