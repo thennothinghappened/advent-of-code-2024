@@ -1,11 +1,5 @@
-use std::{
-    ops::{Index, IndexMut},
-    path::Display,
-};
-
-use enumflags2::BitFlags;
-
 use super::{DayResult, PartResult};
+use enumflags2::BitFlags;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut grid = input
