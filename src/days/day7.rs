@@ -1,13 +1,15 @@
-use std::error::Error;
-
 use itertools::Itertools;
+use rayon::{
+    iter::{IntoParallelRefIterator, ParallelIterator},
+    str::ParallelString,
+};
 
 use super::{DayResult, PartResult};
 use crate::utils::not_yet_implemented;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let equations: Vec<Equation> = input
-        .lines()
+        .par_lines()
         .map(|line| {
             let mut split = line.split(": ");
 
@@ -29,16 +31,16 @@ pub(crate) fn solve(input: &str) -> DayResult {
 
 fn part1(equations: &Vec<Equation>) -> PartResult {
     let sum: usize = equations
-        .iter()
+        .par_iter()
         .filter_map(|equation| {
             let num_op_bits = equation.operands.len();
             let num_combos = 2_usize.pow((num_op_bits - 1) as u32);
 
-            println!("-------------");
-            println!(
-                "Attempt :: Desired Result = {} from operands {:?} (#possible combos = {})",
-                equation.result, equation.operands, num_combos
-            );
+            // println!("-------------");
+            // println!(
+            //     "Attempt :: Desired Result = {} from operands {:?} (#possible combos = {})",
+            //     equation.result, equation.operands, num_combos
+            // );
 
             for combo in 0..num_combos {
                 let mut sum = equation.operands[0];
@@ -55,12 +57,12 @@ fn part1(equations: &Vec<Equation>) -> PartResult {
                 }
 
                 if sum == equation.result {
-                    println!(
-                        "Success! :: Using combination {:?}",
-                        (0..num_op_bits - 1)
-                            .map(|op_index| Op::extract_from(combo, op_index))
-                            .collect_vec()
-                    );
+                    // println!(
+                    //     "Success! :: Using combination {:?}",
+                    //     (0..num_op_bits - 1)
+                    //         .map(|op_index| Op::extract_from(combo, op_index))
+                    //         .collect_vec()
+                    // );
                     return Some(equation.result);
                 }
             }
