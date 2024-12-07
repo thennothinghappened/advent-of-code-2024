@@ -10,7 +10,7 @@ use super::{DayResult, PartResult};
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut grid = input
         .lines()
-        .flat_map(|line| line.chars())
+        .flat_map(|line| line.bytes())
         .collect::<Vec<_>>();
 
     let grid_width = input
@@ -39,12 +39,12 @@ pub(crate) fn solve(input: &str) -> DayResult {
     ))
 }
 
-const FLOOR: char = '.';
-const WALL: char = '#';
-const GUARD_INITIAL: char = '^';
+const FLOOR: u8 = b'.';
+const WALL: u8 = b'#';
+const GUARD_INITIAL: u8 = b'^';
 
 fn part1(
-    grid: &Vec<char>,
+    grid: &Vec<u8>,
     grid_width: usize,
     grid_height: usize,
     initial_pos: Pos,
@@ -65,7 +65,7 @@ fn part1(
 }
 
 fn part2(
-    grid: &mut Vec<char>,
+    grid: &mut Vec<u8>,
     grid_width: usize,
     grid_height: usize,
     initial_pos: Pos,
@@ -128,7 +128,7 @@ fn part2(
 /// `visit_grid`. If the guard exited the map, the number of steps is returned. If they got stuck in
 /// a loop however, [None](None) is returned.
 fn trace_path(
-    grid: &Vec<char>,
+    grid: &Vec<u8>,
     grid_width: usize,
     grid_height: usize,
     visit_grid: &mut Vec<BitFlags<Direction>>,
@@ -289,13 +289,13 @@ impl From<Direction> for Pos {
     }
 }
 
-impl From<Direction> for char {
+impl From<Direction> for u8 {
     fn from(value: Direction) -> Self {
         match value {
-            Direction::Up => '^',
-            Direction::Right => '>',
-            Direction::Down => 'V',
-            Direction::Left => '<',
+            Direction::Up => b'^',
+            Direction::Right => b'>',
+            Direction::Down => b'V',
+            Direction::Left => b'<',
         }
     }
 }
