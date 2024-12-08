@@ -46,7 +46,7 @@ pub(crate) fn retrieve_input(
 
     let cookie = cookie_opt.ok_or_else(|| RetrieveInputError::NoCookieForDownload)?;
 
-    let input = download_input(day, &cookie)?;
+    let input = download_input(day, cookie)?;
     let mut file = File::create_new(&input_path)?;
     file.write_all(input.as_bytes())?;
 

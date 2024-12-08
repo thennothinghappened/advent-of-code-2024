@@ -15,8 +15,7 @@ fn part1(input: &str) -> PartResult {
             line.map(|num| num.parse::<i32>().expect("Invalid number in line!"))
                 .collect::<Vec<i32>>()
         })
-        .into_iter()
-        .filter(|report| evaluate_report(&report))
+        .filter(|report| evaluate_report(report))
         .count();
 
     Ok(num_reports_ok.to_string())
@@ -30,9 +29,8 @@ fn part2(input: &str) -> PartResult {
             line.map(|num| num.parse::<i32>().expect("Invalid number in line!"))
                 .collect::<Vec<i32>>()
         })
-        .into_iter()
         .filter(|report| {
-            if evaluate_report(&report) {
+            if evaluate_report(report) {
                 return true;
             }
 
@@ -49,7 +47,7 @@ fn part2(input: &str) -> PartResult {
                 mutable_report.insert(i, entry);
             }
 
-            return false;
+            false
         })
         .count();
 

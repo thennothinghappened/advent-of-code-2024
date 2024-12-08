@@ -37,7 +37,7 @@ fn part1(char_matrix: &[Vec<char>]) -> PartResult {
     for y in 0..char_matrix.len() {
         for x in 0..char_matrix[y].len() {
             'try_offsets: for (ox, oy) in CHECK_OFFSETS {
-                for i in 0..XMAS.len() {
+                for (i, &char) in XMAS.iter().enumerate() {
                     let Ok(check_x) = usize::try_from((x as i32) + (ox * (i as i32))) else {
                         continue 'try_offsets;
                     };
@@ -56,7 +56,7 @@ fn part1(char_matrix: &[Vec<char>]) -> PartResult {
 
                     let c = char_matrix[check_y][check_x];
 
-                    if c != XMAS[i] {
+                    if c != char {
                         continue 'try_offsets;
                     }
                 }

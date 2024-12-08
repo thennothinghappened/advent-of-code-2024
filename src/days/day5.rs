@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    let mut lines = input.lines().into_iter();
+    let mut lines = input.lines();
     let mut dependencies = FxHashMap::<usize, Vec<usize>>::default();
 
     lines
@@ -20,7 +20,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
         .for_each(|(page, dependency)| {
             dependencies
                 .entry(page)
-                .or_insert_with(|| Vec::new())
+                .or_insert_with(Vec::new)
                 .push(dependency);
         });
 
@@ -41,7 +41,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
 
 fn part1(dependencies: &FxHashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
     let correct = updates
-        .into_iter()
+        .iter()
         .filter(|update| is_sorted(update, dependencies));
     let sum_middle_pages: usize = correct.map(|update| update[update.len() / 2]).sum();
 
@@ -53,9 +53,9 @@ fn part2(dependencies: &FxHashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) ->
     // that.
 
     let sum_middle_pages = updates
-        .into_iter()
+        .iter()
         .filter(|update| !is_sorted(update, dependencies))
-        .map(|update| update.clone())
+        .cloned()
         .map(|mut update| {
             update.sort_unstable_by(|a, b| sort_pages(dependencies, a, b));
             update

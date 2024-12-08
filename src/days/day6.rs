@@ -49,7 +49,7 @@ fn part1(
 ) -> PartResult {
     let mut visit_grid = vec![BitFlags::<Direction>::empty(); grid_width * grid_height];
     let visited = trace_path(
-        &grid,
+        grid,
         &mut visit_grid,
         grid_width,
         grid_height,
@@ -77,7 +77,7 @@ fn part2(
 
     let mut visit_grid = vec![BitFlags::<Direction>::empty(); grid_width * grid_height];
     trace_path(
-        &grid,
+        grid,
         &mut visit_grid,
         grid_width,
         grid_height,
@@ -96,14 +96,15 @@ fn part2(
         .filter(|&pos| pos != initial_pos)
         .filter(|&pos| {
             trace_path(
-                &grid,
+                grid,
                 &mut vec![BitFlags::<Direction>::empty(); grid_width * grid_height],
                 grid_width,
                 grid_height,
                 initial_pos,
                 initial_dir,
                 Some(pos),
-            ) == None
+            )
+            .is_none()
         })
         .count();
 

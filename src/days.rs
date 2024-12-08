@@ -14,7 +14,7 @@ pub(crate) type PartResult = Result<String, Box<dyn Error>>;
 pub(crate) type DayResult = Result<(String, String), Box<dyn Error>>;
 pub(crate) type DayFunc = fn(&str) -> DayResult;
 
-pub(crate) const DAYS: &'static [DayFunc] = &[
+pub(crate) const DAYS: &[DayFunc] = &[
     day1::solve,
     day2::solve,
     day3::solve,
