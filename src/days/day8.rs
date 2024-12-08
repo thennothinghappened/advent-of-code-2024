@@ -1,11 +1,8 @@
-use std::{collections::HashMap, ops::DerefMut};
-
 use itertools::Itertools;
-use rustc_hash::{FxHashMap, FxHashSet};
-
-use crate::utils::{not_yet_implemented, pos::Pos};
+use rustc_hash::FxHashSet;
 
 use super::{DayResult, PartResult};
+use crate::utils::pos::Pos;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
@@ -35,10 +32,10 @@ fn part1(input: &str) -> PartResult {
         })
         .into_group_map();
 
-    println!(
-        "{:#?}\n\nGrid :: {}x{}",
-        antenna_types, grid_width, grid_height
-    );
+    // println!(
+    //     "{:#?}\n\nGrid :: {}x{}",
+    //     antenna_types, grid_width, grid_height
+    // );
 
     let mut antinodes = FxHashSet::<Pos>::default();
 
@@ -58,31 +55,31 @@ fn part1(input: &str) -> PartResult {
         }
     }
 
-    println!(
-        "{}",
-        (0..grid_height)
-            .map(|y| (0..grid_width)
-                .map(|x| {
-                    let pos = Pos {
-                        x: x as i32,
-                        y: y as i32,
-                    };
+    // println!(
+    //     "{}",
+    //     (0..grid_height)
+    //         .map(|y| (0..grid_width)
+    //             .map(|x| {
+    //                 let pos = Pos {
+    //                     x: x as i32,
+    //                     y: y as i32,
+    //                 };
 
-                    if antinodes.contains(&pos) {
-                        return &'#';
-                    }
+    //                 if antinodes.contains(&pos) {
+    //                     return &'#';
+    //                 }
 
-                    for (char, antennas) in antenna_types.iter() {
-                        if antennas.contains(&pos) {
-                            return &char;
-                        }
-                    }
+    //                 for (char, antennas) in antenna_types.iter() {
+    //                     if antennas.contains(&pos) {
+    //                         return &char;
+    //                     }
+    //                 }
 
-                    &'.'
-                })
-                .join(""))
-            .join("\n")
-    );
+    //                 &'.'
+    //             })
+    //             .join(""))
+    //         .join("\n")
+    // );
 
     Ok(antinodes.len().to_string())
 }
@@ -111,10 +108,10 @@ fn part2(input: &str) -> PartResult {
         })
         .into_group_map();
 
-    println!(
-        "{:#?}\n\nGrid :: {}x{}",
-        antenna_types, grid_width, grid_height
-    );
+    // println!(
+    //     "{:#?}\n\nGrid :: {}x{}",
+    //     antenna_types, grid_width, grid_height
+    // );
 
     let mut antinodes = FxHashSet::<Pos>::default();
 
@@ -141,31 +138,31 @@ fn part2(input: &str) -> PartResult {
         }
     }
 
-    println!(
-        "{}",
-        (0..grid_height)
-            .map(|y| (0..grid_width)
-                .map(|x| {
-                    let pos = Pos {
-                        x: x as i32,
-                        y: y as i32,
-                    };
+    // println!(
+    //     "{}",
+    //     (0..grid_height)
+    //         .map(|y| (0..grid_width)
+    //             .map(|x| {
+    //                 let pos = Pos {
+    //                     x: x as i32,
+    //                     y: y as i32,
+    //                 };
 
-                    if antinodes.contains(&pos) {
-                        return &'#';
-                    }
+    //                 if antinodes.contains(&pos) {
+    //                     return &'#';
+    //                 }
 
-                    for (char, antennas) in antenna_types.iter() {
-                        if antennas.contains(&pos) {
-                            return &char;
-                        }
-                    }
+    //                 for (char, antennas) in antenna_types.iter() {
+    //                     if antennas.contains(&pos) {
+    //                         return &char;
+    //                     }
+    //                 }
 
-                    &'.'
-                })
-                .join(""))
-            .join("\n")
-    );
+    //                 &'.'
+    //             })
+    //             .join(""))
+    //         .join("\n")
+    // );
 
     Ok(antinodes.len().to_string())
 }
