@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub struct Pos {
     pub x: i32,
     pub y: i32,
@@ -39,5 +39,22 @@ impl std::ops::Sub for Pos {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
         }
+    }
+}
+
+impl std::ops::Mul for Pos {
+    type Output = Pos;
+
+    fn mul(self, rhs: Pos) -> Self::Output {
+        Pos {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl From<i32> for Pos {
+    fn from(value: i32) -> Self {
+        Pos { x: value, y: value }
     }
 }
