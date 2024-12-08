@@ -1,10 +1,11 @@
-use std::{cmp::Ordering, collections::HashMap};
+use rustc_hash::FxHashMap;
+use std::cmp::Ordering;
 
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut lines = input.lines().into_iter();
-    let mut dependencies = HashMap::<usize, Vec<usize>>::new();
+    let mut dependencies = FxHashMap::<usize, Vec<usize>>::default();
 
     lines
         .by_ref()
@@ -38,7 +39,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
     ))
 }
 
-fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
+fn part1(dependencies: &FxHashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
     let correct = updates
         .into_iter()
         .filter(|update| is_sorted(update, dependencies));
@@ -47,7 +48,7 @@ fn part1(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> P
     Ok(sum_middle_pages.to_string())
 }
 
-fn part2(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
+fn part2(dependencies: &FxHashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> PartResult {
     // We're working under the assumption that there IS always a valid order, and work to achieve
     // that.
 
@@ -65,7 +66,7 @@ fn part2(dependencies: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> P
     Ok(sum_middle_pages.to_string())
 }
 
-fn sort_pages(dependencies: &HashMap<usize, Vec<usize>>, a: &usize, b: &usize) -> Ordering {
+fn sort_pages(dependencies: &FxHashMap<usize, Vec<usize>>, a: &usize, b: &usize) -> Ordering {
     if let Some(deps_for_a) = dependencies.get(a) {
         if deps_for_a.contains(b) {
             return Ordering::Greater;
@@ -82,6 +83,6 @@ fn sort_pages(dependencies: &HashMap<usize, Vec<usize>>, a: &usize, b: &usize) -
 }
 
 /// Determine whether an update list satisfies the dependencies.
-fn is_sorted(update: &[usize], dependencies: &HashMap<usize, Vec<usize>>) -> bool {
+fn is_sorted(update: &[usize], dependencies: &FxHashMap<usize, Vec<usize>>) -> bool {
     update.is_sorted_by(|a, b| sort_pages(dependencies, a, b).is_lt())
 }
