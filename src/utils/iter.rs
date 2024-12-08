@@ -21,7 +21,7 @@ pub trait MoreIterTools: Iterator {
     /// assert_eq!(lookup[&2], vec![12, 42]);
     /// assert_eq!(lookup[&3], vec![13, 33]);
     /// ```
-    fn into_group_map<K, V>(self) -> FxHashMap<K, Vec<V>>
+    fn into_group_map_fx<K, V>(self) -> FxHashMap<K, Vec<V>>
     where
         Self: Iterator<Item = (K, V)> + Sized,
         K: Hash + Eq,
@@ -35,3 +35,5 @@ pub trait MoreIterTools: Iterator {
         lookup
     }
 }
+
+impl<T> MoreIterTools for T where T: Iterator + ?Sized {}
