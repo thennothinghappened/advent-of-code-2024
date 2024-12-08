@@ -99,16 +99,3 @@ enum Op {
     Mul,
     Concat,
 }
-
-impl Op {
-    fn perform(&self, lhs: usize, rhs: usize) -> usize {
-        match self {
-            Op::Add => lhs + rhs,
-            Op::Mul => lhs * rhs,
-            Op::Concat => {
-                let num_digits_rhs = rhs.checked_ilog10().unwrap_or(0) + 1;
-                lhs * 10_usize.pow(num_digits_rhs) + rhs
-            }
-        }
-    }
-}
