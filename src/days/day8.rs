@@ -92,31 +92,5 @@ fn part2(
         }
     }
 
-    // println!(
-    //     "{}",
-    //     (0..grid_height)
-    //         .map(|y| (0..grid_width)
-    //             .map(|x| {
-    //                 let pos = Pos {
-    //                     x: x as i32,
-    //                     y: y as i32,
-    //                 };
-
-    //                 if antinodes.contains(&pos) {
-    //                     return &'#';
-    //                 }
-
-    //                 for (char, antennas) in antenna_types.iter() {
-    //                     if antennas.contains(&pos) {
-    //                         return &char;
-    //                     }
-    //                 }
-
-    //                 &'.'
-    //             })
-    //             .join(""))
-    //         .join("\n")
-    // );
-
     Ok(antinodes.len().to_string())
 }
