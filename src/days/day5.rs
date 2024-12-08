@@ -9,10 +9,10 @@ pub(crate) fn solve(input: &str) -> DayResult {
     lines
         .by_ref()
         .map_while(|line| {
-            let mut split = line.split('|');
+            let (lhs, rhs) = line.split_once('|')?;
 
-            let dependency = split.next()?.parse::<usize>().ok()?;
-            let page = split.next()?.parse::<usize>().ok()?;
+            let dependency = lhs.parse::<usize>().ok()?;
+            let page = rhs.parse::<usize>().ok()?;
 
             Some((page, dependency))
         })
