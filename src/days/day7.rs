@@ -28,7 +28,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
 
 fn part1(equations: &[Equation]) -> PartResult {
     let sum: usize = equations
-        .iter()
+        .par_iter()
         .filter(|equation| is_possible(equation.result, &equation.operands, &[Op::Add, Op::Mul]))
         .map(|equation| equation.result)
         .sum();
@@ -38,7 +38,7 @@ fn part1(equations: &[Equation]) -> PartResult {
 
 fn part2(equations: &[Equation]) -> PartResult {
     let sum: usize = equations
-        .iter()
+        .par_iter()
         .filter(|equation| {
             is_possible(
                 equation.result,
