@@ -1,10 +1,6 @@
-use std::time::Instant;
-
 use itertools::Itertools;
 use rayon::{
-    iter::{
-        IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
-    },
+    iter::{IntoParallelRefIterator, ParallelIterator},
     str::ParallelString,
 };
 
