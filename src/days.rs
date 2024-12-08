@@ -5,6 +5,7 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 
 use core::str;
 use std::error::Error;
@@ -21,4 +22,5 @@ pub(crate) const DAYS: &'static [DayFunc] = &[
     day5::solve,
     day6::solve,
     day7::solve,
+    day8::solve,
 ];
