@@ -14,19 +14,18 @@ pub(crate) fn solve(input: &str) -> DayResult {
         .lines()
         .enumerate()
         .flat_map(|(y, line)| {
-            line.chars().enumerate().filter_map(move |(x, chr)| {
-                if chr == '.' {
-                    return None;
-                }
-
-                Some((
-                    chr,
-                    Pos {
-                        x: x as i32,
-                        y: y as i32,
-                    },
-                ))
-            })
+            line.chars()
+                .enumerate()
+                .filter_map(move |(x, chr)| match chr {
+                    '.' => None,
+                    _ => Some((
+                        chr,
+                        Pos {
+                            x: x as i32,
+                            y: y as i32,
+                        },
+                    )),
+                })
         })
         .into_group_map_fx();
 
