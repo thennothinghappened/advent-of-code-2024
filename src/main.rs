@@ -14,6 +14,7 @@ fn main() {
         .enumerate()
         .map(|(i, day)| (i + 1, day))
         .map::<Result<_, Box<dyn Error>>, _>(|(day, day_func)| {
+            println!();
             println!("--- Day {} ---", day);
 
             let input = input::retrieve_input(day, cookie_opt.as_deref(), &inputs_cache_path)?;
@@ -27,7 +28,6 @@ fn main() {
                 println!("Part 1 :: {}", part1);
                 println!("Part 2 :: {}", part2);
                 println!("Took {}µs", elapsed.as_micros());
-                println!();
             }
             Err(err) => println!("Error! {:#?}", err),
         });
