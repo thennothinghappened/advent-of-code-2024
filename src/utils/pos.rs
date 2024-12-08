@@ -30,3 +30,14 @@ impl std::ops::Add for Pos {
         }
     }
 }
+
+impl std::ops::Sub for Pos {
+    type Output = Pos;
+
+    fn sub(self, rhs: Pos) -> Self::Output {
+        Pos {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
