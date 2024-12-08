@@ -200,24 +200,6 @@ impl std::ops::Add<Direction> for Pos {
     }
 }
 
-impl From<Pos> for (i32, i32) {
-    fn from(value: Pos) -> (i32, i32) {
-        (value.x, value.y)
-    }
-}
-
-impl From<(i32, i32)> for Pos {
-    fn from((x, y): (i32, i32)) -> Self {
-        Pos { x, y }
-    }
-}
-
-impl std::fmt::Display for Pos {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "(x: {}, y: {})", self.x, self.y)
-    }
-}
-
 #[enumflags2::bitflags]
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -246,17 +228,6 @@ impl From<Direction> for Pos {
             Direction::Right => Pos { x: 1, y: 0 },
             Direction::Down => Pos { x: 0, y: 1 },
             Direction::Left => Pos { x: -1, y: 0 },
-        }
-    }
-}
-
-impl From<Direction> for u8 {
-    fn from(value: Direction) -> Self {
-        match value {
-            Direction::Up => b'^',
-            Direction::Right => b'>',
-            Direction::Down => b'V',
-            Direction::Left => b'<',
         }
     }
 }
