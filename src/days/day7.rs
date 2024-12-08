@@ -77,7 +77,7 @@ fn is_possible(result: usize, operands: &[usize], ops: &[Op]) -> bool {
                         return false;
                     }
 
-                    let divisor = 10_usize.pow(last.checked_ilog10().unwrap_or(0) + 1);
+                    let divisor = 10_usize.pow(last.ilog10() + 1);
                     let result_removed_last = result - last;
 
                     (result_removed_last % divisor == 0)
