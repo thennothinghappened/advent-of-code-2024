@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
@@ -5,10 +7,6 @@ use super::{DayResult, PartResult};
 use crate::utils::pos::Pos;
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
     let grid_width = input.lines().next().unwrap().len();
     let grid_height = input.lines().count();
 
@@ -32,11 +30,17 @@ fn part1(input: &str) -> PartResult {
         })
         .into_group_map();
 
-    // println!(
-    //     "{:#?}\n\nGrid :: {}x{}",
-    //     antenna_types, grid_width, grid_height
-    // );
+    Ok((
+        part1(&antenna_types, grid_width, grid_height)?,
+        part2(&antenna_types, grid_width, grid_height)?,
+    ))
+}
 
+fn part1(
+    antenna_types: &HashMap<char, Vec<Pos>>,
+    grid_width: usize,
+    grid_height: usize,
+) -> PartResult {
     let mut antinodes = FxHashSet::<Pos>::default();
 
     for (char, antennas) in antenna_types.iter() {
@@ -55,64 +59,14 @@ fn part1(input: &str) -> PartResult {
         }
     }
 
-    // println!(
-    //     "{}",
-    //     (0..grid_height)
-    //         .map(|y| (0..grid_width)
-    //             .map(|x| {
-    //                 let pos = Pos {
-    //                     x: x as i32,
-    //                     y: y as i32,
-    //                 };
-
-    //                 if antinodes.contains(&pos) {
-    //                     return &'#';
-    //                 }
-
-    //                 for (char, antennas) in antenna_types.iter() {
-    //                     if antennas.contains(&pos) {
-    //                         return &char;
-    //                     }
-    //                 }
-
-    //                 &'.'
-    //             })
-    //             .join(""))
-    //         .join("\n")
-    // );
-
     Ok(antinodes.len().to_string())
 }
 
-fn part2(input: &str) -> PartResult {
-    let grid_width = input.lines().next().unwrap().len();
-    let grid_height = input.lines().count();
-
-    let antenna_types = input
-        .lines()
-        .enumerate()
-        .flat_map(|(y, line)| {
-            line.chars().enumerate().filter_map(move |(x, chr)| {
-                if chr == '.' {
-                    return None;
-                }
-
-                Some((
-                    chr,
-                    Pos {
-                        x: x as i32,
-                        y: y as i32,
-                    },
-                ))
-            })
-        })
-        .into_group_map();
-
-    // println!(
-    //     "{:#?}\n\nGrid :: {}x{}",
-    //     antenna_types, grid_width, grid_height
-    // );
-
+fn part2(
+    antenna_types: &HashMap<char, Vec<Pos>>,
+    grid_width: usize,
+    grid_height: usize,
+) -> PartResult {
     let mut antinodes = FxHashSet::<Pos>::default();
 
     for (char, antennas) in antenna_types.iter() {
