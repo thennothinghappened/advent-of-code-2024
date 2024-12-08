@@ -56,6 +56,9 @@ fn is_possible(result: usize, operands: &[usize], ops: &[Op]) -> bool {
     // 4. We should have reached 0 by the end.
 
     match operands {
+        // I had no idea this syntax existed for `match` (especially using `@` for saving a ref)!
+        // Credit to https://pastebin.com/5nH8eaUq for this line, gave me a good starting point to
+        // approach the rest of the process from while not looking too unsightly.
         [remaining @ .., last] => ops.iter().any(|op| {
             match op {
                 // For addition, `x + last == result`, and there's no subtraction.
