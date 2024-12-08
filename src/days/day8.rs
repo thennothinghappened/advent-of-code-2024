@@ -1,10 +1,8 @@
-use crate::utils::iter;
-use rustc_hash::{FxHashMap, FxHashSet};
-
 use self::iter::MoreIterTools;
-
-use super::{DayResult, PartResult};
+use super::DayResult;
+use crate::utils::iter;
 use crate::utils::pos::Pos;
+use rustc_hash::FxHashSet;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let grid_width = input.lines().next().unwrap().len();
@@ -30,20 +28,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
         })
         .into_group_map_fx();
 
-    Ok((
-        part1(&antenna_types, grid_width, grid_height)?,
-        part2(&antenna_types, grid_width, grid_height)?,
-    ))
-}
-
-fn part1(
-    antenna_types: &FxHashMap<char, Vec<Pos>>,
-    grid_width: usize,
-    grid_height: usize,
-) -> PartResult {
     let mut antinodes = FxHashSet::<Pos>::default();
 
-    for (_, antennas) in antenna_types {
+    for antennas in antenna_types.values() {
         for i in 0..antennas.len() {
             let src_antenna = antennas[i];
             for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
@@ -59,17 +46,9 @@ fn part1(
         }
     }
 
-    Ok(antinodes.len().to_string())
-}
+    let p1_num_antinodes = antinodes.len();
 
-fn part2(
-    antenna_types: &FxHashMap<char, Vec<Pos>>,
-    grid_width: usize,
-    grid_height: usize,
-) -> PartResult {
-    let mut antinodes = FxHashSet::<Pos>::default();
-
-    for (_, antennas) in antenna_types {
+    for antennas in antenna_types.values() {
         for i in 0..antennas.len() {
             let src_antenna = antennas[i];
             for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
@@ -92,5 +71,6 @@ fn part2(
         }
     }
 
-    Ok(antinodes.len().to_string())
+    let p2_num_antinodes = antinodes.len();
+    Ok((p1_num_antinodes.to_string(), p2_num_antinodes.to_string()))
 }
