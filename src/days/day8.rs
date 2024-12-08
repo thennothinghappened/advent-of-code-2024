@@ -1,3 +1,5 @@
+use std::i32;
+
 use self::iter::MoreIterTools;
 use super::DayResult;
 use crate::utils::iter;
@@ -51,10 +53,9 @@ pub(crate) fn solve(input: &str) -> DayResult {
     for antennas in antenna_types.values() {
         for i in 0..antennas.len() {
             let src_antenna = antennas[i];
-            for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
-                let mut offset = 1;
 
-                loop {
+            for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
+                for offset in 1..i32::MAX {
                     let antinode = src_antenna + (dest_antenna - src_antenna) * offset.into();
 
                     if !antinode.is_positive()
@@ -65,12 +66,12 @@ pub(crate) fn solve(input: &str) -> DayResult {
                     }
 
                     antinodes.insert(antinode);
-                    offset += 1;
                 }
             }
         }
     }
 
     let p2_num_antinodes = antinodes.len();
+
     Ok((p1_num_antinodes.to_string(), p2_num_antinodes.to_string()))
 }
