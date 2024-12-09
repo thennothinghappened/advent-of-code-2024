@@ -29,8 +29,6 @@ fn part1(input: &str) -> PartResult {
         })
         .collect();
 
-    print_fs(&fs);
-
     while let Some(free_index) = fs.iter().position(|block| block.is_none()) {
         let Some(swap_block_index) = fs
             .iter()
@@ -48,8 +46,6 @@ fn part1(input: &str) -> PartResult {
 
         fs.swap(swap_block_index, free_index);
     }
-
-    print_fs(&fs);
 
     Ok(fs
         .iter()
@@ -118,17 +114,6 @@ fn part2(input: &str) -> PartResult {
         }
     }
 
-    // println!(
-    //     "\n\nd2 ::  {}",
-    //     fs.iter()
-    //         .map(|block| match block.id {
-    //             Some(id) => id.to_string(),
-    //             None => String::from("."),
-    //         }
-    //         .repeat(block.size as usize))
-    //         .join("")
-    // );
-
     let mut sum = 0;
     let mut offset = 0;
 
@@ -143,18 +128,6 @@ fn part2(input: &str) -> PartResult {
     }
 
     Ok(sum.to_string())
-}
-
-fn print_fs(fs: &[Option<usize>]) {
-    // println!(
-    //     "{}",
-    //     fs.iter()
-    //         .map(|block| match block {
-    //             Some(index) => index.to_string(),
-    //             None => String::from("."),
-    //         })
-    //         .join("")
-    // );
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
