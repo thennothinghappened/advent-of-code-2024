@@ -15,22 +15,50 @@ fn part1(input: &str) -> PartResult {
     // 4. Checksum is given by sum of enumerating each block * their ID.
 
     let mut fs: Vec<Option<usize>> = input
+        .lines()
+        .next()
+        .unwrap()
         .chars()
         .map(|char| char.to_digit(10).unwrap())
         .enumerate()
         .flat_map(|(index, count)| {
-            let block_type = match index % 2 {
+            let block = match index % 2 {
                 0 => Some(index / 2),
                 _ => None,
             };
 
-            vec![block_type; count as usize]
+            vec![block; count as usize]
         })
         .collect();
 
     print_fs(&fs);
 
-    not_yet_implemented()
+    while let Some(free_index) = fs.iter().position(|block| block.is_none()) {
+        let Some(swap_block_index) = fs
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, block)| block.is_some())
+            .map(|(index, _)| index)
+        else {
+            break;
+        };
+
+        if swap_block_index < free_index {
+            break;
+        }
+
+        fs.swap(swap_block_index, free_index);
+    }
+
+    print_fs(&fs);
+
+    Ok(fs
+        .iter()
+        .enumerate()
+        .filter_map(|(index, block)| block.map(|id| index * id))
+        .sum::<usize>()
+        .to_string())
 }
 
 fn part2(input: &str) -> PartResult {
