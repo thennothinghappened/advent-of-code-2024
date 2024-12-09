@@ -30,7 +30,7 @@ fn part1(input: &str) -> PartResult {
         .collect();
 
     while let Some(free_index) = fs.iter().position(|block| block.is_none()) {
-        let Some(swap_block_index) = fs
+        let Some(file_index) = fs
             .iter()
             .enumerate()
             .rev()
@@ -40,11 +40,11 @@ fn part1(input: &str) -> PartResult {
             break;
         };
 
-        if swap_block_index < free_index {
+        if file_index < free_index {
             break;
         }
 
-        fs.swap(swap_block_index, free_index);
+        fs.swap(file_index, free_index);
     }
 
     Ok(fs
