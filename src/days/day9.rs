@@ -28,6 +28,16 @@ fn part1(input: &str) -> PartResult {
         })
         .collect();
 
+    print_fs(&fs);
+
+    not_yet_implemented()
+}
+
+fn part2(input: &str) -> PartResult {
+    not_yet_implemented()
+}
+
+fn print_fs(fs: &[Option<usize>]) {
     println!(
         "{}",
         fs.iter()
@@ -37,10 +47,4 @@ fn part1(input: &str) -> PartResult {
             })
             .join("")
     );
-
-    not_yet_implemented()
-}
-
-fn part2(input: &str) -> PartResult {
-    not_yet_implemented()
 }
