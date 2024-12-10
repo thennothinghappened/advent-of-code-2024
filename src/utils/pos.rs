@@ -1,4 +1,4 @@
-use std::{ops::Index, slice::SliceIndex};
+use std::fmt::Display;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub struct Pos {
@@ -44,6 +44,12 @@ impl Pos {
     }
 }
 
+impl Display for Pos {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
 impl std::ops::Add for Pos {
     type Output = Pos;
 
@@ -84,16 +90,26 @@ impl From<i32> for Pos {
 }
 
 /// Rust did not want to cooperate with me implementing `Index` to use with `Vec`.
-trait Index2<T> {
+pub trait Index2d<T> {
     type Output;
 
-    fn index(&self, index: Pos) -> &Self::Output;
+    fn get_2d(&self, index: Pos) -> Option<&Self::Output>;
+    fn get_2d_unchecked(&self, index: Pos) -> &Self::Output;
 }
 
-impl<T> Index2<Pos> for [&Vec<T>] {
+impl<T> Index2d<Pos> for &Vec<Vec<T>> {
     type Output = T;
 
-    fn index(&self, index: Pos) -> &Self::Output {
+    fn get_2d(&self, index: Pos) -> Option<&Self::Output> {
+        if !index.is_positive() {
+            return None;
+        }
+
+        let row = self.get(index.y as usize)?;
+        row.get(index.x as usize)
+    }
+
+    fn get_2d_unchecked(&self, index: Pos) -> &Self::Output {
         &self[index.y as usize][index.x as usize]
     }
 }
