@@ -7,6 +7,17 @@ pub struct Pos {
 }
 
 impl Pos {
+    pub fn new(x: i32, y: i32) -> Self {
+        Pos { x, y }
+    }
+
+    pub fn new_from_usize_unchecked(x: usize, y: usize) -> Self {
+        Pos {
+            x: x as i32,
+            y: y as i32,
+        }
+    }
+
     pub fn is_positive(&self) -> bool {
         self.x >= 0 && self.y >= 0
     }
