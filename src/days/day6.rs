@@ -1,4 +1,4 @@
-use crate::utils::pos::Pos;
+use crate::utils::{direction::Direction, pos::Pos};
 
 use super::{DayResult, PartResult};
 use enumflags2::BitFlags;
@@ -160,46 +160,6 @@ fn trace_path(
     }
 
     Some(visit_count)
-}
-
-impl std::ops::Add<Direction> for Pos {
-    type Output = Pos;
-
-    fn add(self, rhs: Direction) -> Self::Output {
-        self + Pos::from(rhs)
-    }
-}
-
-#[enumflags2::bitflags]
-#[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    Up,
-    Right,
-    Down,
-    Left,
-}
-
-impl Direction {
-    fn turned_right(&self) -> Direction {
-        match self {
-            Direction::Up => Direction::Right,
-            Direction::Right => Direction::Down,
-            Direction::Down => Direction::Left,
-            Direction::Left => Direction::Up,
-        }
-    }
-}
-
-impl From<Direction> for Pos {
-    fn from(value: Direction) -> Self {
-        match value {
-            Direction::Up => Pos { x: 0, y: -1 },
-            Direction::Right => Pos { x: 1, y: 0 },
-            Direction::Down => Pos { x: 0, y: 1 },
-            Direction::Left => Pos { x: -1, y: 0 },
-        }
-    }
 }
 
 trait FlatIndex<T> {
