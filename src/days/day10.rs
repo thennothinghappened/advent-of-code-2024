@@ -1,12 +1,10 @@
-use std::{iter, vec};
+use std::vec;
 
 use itertools::Itertools;
-use rayon::iter::empty;
 use rustc_hash::FxHashSet;
 
 use crate::utils::{
     direction::DIRECTIONS,
-    not_yet_implemented,
     pos::{Index2d, Pos},
 };
 
