@@ -113,3 +113,26 @@ impl<T> Index2d<Pos> for &Vec<Vec<T>> {
         &self[index.y as usize][index.x as usize]
     }
 }
+
+pub trait FlatIndex<T> {
+    type Output: ?Sized;
+    fn flat_index(&self, width: usize, index: T) -> &Self::Output;
+}
+
+pub trait FlatIndexMut<T>: FlatIndex<T> {
+    fn flat_index_mut(&mut self, width: usize, index: T) -> &mut Self::Output;
+}
+
+impl<T> FlatIndex<Pos> for [T] {
+    type Output = T;
+
+    fn flat_index(&self, width: usize, index: Pos) -> &Self::Output {
+        &self[index.x as usize + (index.y as usize) * width]
+    }
+}
+
+impl<T> FlatIndexMut<Pos> for [T] {
+    fn flat_index_mut(&mut self, width: usize, index: Pos) -> &mut Self::Output {
+        &mut self[index.x as usize + (index.y as usize) * width]
+    }
+}
