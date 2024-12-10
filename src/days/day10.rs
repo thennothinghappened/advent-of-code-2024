@@ -47,6 +47,28 @@ fn part1(input: &str) -> PartResult {
     Ok(sum.to_string())
 }
 
+fn part2(input: &str) -> PartResult {
+    let grid = input
+        .lines()
+        .map(|line| {
+            line.chars()
+                .map(|char| char.to_digit(10).unwrap())
+                .collect_vec()
+        })
+        .collect_vec();
+
+    let mut sum = 0;
+
+    for (y, row) in grid.iter().enumerate() {
+        for (x, _) in row.iter().enumerate().filter(|(_, col)| **col == 0) {
+            let start_pos = Pos::new_from_usize_unchecked(x, y);
+            sum += rate(&grid, start_pos, 0);
+        }
+    }
+
+    Ok(sum.to_string())
+}
+
 fn find_peaks(grid: &Vec<Vec<u32>>, from_pos: Pos, from_height: u32) -> Vec<Pos> {
     DIRECTIONS
         .iter()
@@ -68,6 +90,23 @@ fn find_peaks(grid: &Vec<Vec<u32>>, from_pos: Pos, from_height: u32) -> Vec<Pos>
         .collect()
 }
 
-fn part2(input: &str) -> PartResult {
-    not_yet_implemented()
+fn rate(grid: &Vec<Vec<u32>>, from_pos: Pos, from_height: u32) -> usize {
+    DIRECTIONS
+        .iter()
+        .filter_map(move |&direction| {
+            let pos = from_pos + direction;
+            let height = grid.get_2d(pos)?;
+
+            if *height - 1 != from_height {
+                return None;
+            }
+
+            if *height == 9 {
+                return Some(vec![pos]);
+            }
+
+            Some(find_peaks(grid, pos, *height))
+        })
+        .flatten()
+        .count()
 }
