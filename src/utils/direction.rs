@@ -10,6 +10,13 @@ pub enum Direction {
     Left,
 }
 
+pub const DIRECTIONS: [Direction; 4] = [
+    Direction::Up,
+    Direction::Right,
+    Direction::Down,
+    Direction::Left,
+];
+
 impl std::ops::Add<Direction> for Pos {
     type Output = Pos;
 
