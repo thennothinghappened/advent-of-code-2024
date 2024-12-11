@@ -1,109 +1,84 @@
-use std::iter::{once, Once};
-
-use itertools::{Either, Itertools};
-
-use crate::utils::not_yet_implemented;
-
 use super::{DayResult, PartResult};
+use rustc_hash::FxHashMap;
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
+    let mut cache = FxHashMap::<(u64, u64), u64>::default();
+
+    Ok((part1(input, &mut cache)?, part2(input, &mut cache)?))
 }
 
-fn part1(input: &str) -> PartResult {
-    // LMFAO I'll sort this out later.
+fn part1(input: &str, cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
     let num_stones = input
         .lines()
         .next()
         .unwrap()
-        .split_whitespace()
+        .split_ascii_whitespace()
         .map(|stone| stone.parse::<u64>().unwrap())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .flat_map(|stone| blink(stone).into_iter())
-        .count();
+        .map(|stone| blink(cache, stone, 25))
+        .sum::<u64>();
 
     Ok(num_stones.to_string())
 }
 
-fn blink(stone: u64) -> Either<Once<u64>, [u64; 2]> {
-    if stone == 0 {
-        return Either::Left(once(1));
-    }
+fn part2(input: &str, cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
+    let num_stones = input
+        .lines()
+        .next()
+        .unwrap()
+        .split_ascii_whitespace()
+        .map(|stone| stone.parse::<u64>().unwrap())
+        .map(|stone| blink(cache, stone, 75))
+        .sum::<u64>();
 
-    let num_digits = stone.ilog10() + 1;
-
-    if num_digits % 2 != 0 {
-        return Either::Left(once(stone * 2024));
-    }
-
-    Either::Right(split_halfway(stone))
+    Ok(num_stones.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
-    not_yet_implemented()
-}
-
-fn split_halfway(stone: u64) -> [u64; 2] {
-    debug_assert_eq!(stone % 2, 0);
-
+fn split_halfway(stone: u64) -> (u64, u64) {
     let num_digits = stone.ilog10() + 1;
     let halfway = num_digits / 2;
     let divisor = 10_u64.pow(halfway);
     let high = stone / divisor;
     let low = stone - high * 10_u64.pow(halfway);
 
-    [high, low]
+    (high, low)
 }
 
-#[test]
-fn blink_works() {
-    {
-        let stone = 0;
-        assert_eq!(blink(stone).unwrap_left().next().unwrap(), 1);
+fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) -> u64 {
+    if let Some(cached_entry) = cache.get(&(stone, iterations)) {
+        return *cached_entry;
     }
 
-    {
-        let stone = 123;
-        assert_eq!(blink(stone).unwrap_left().next().unwrap(), 123 * 2024);
+    if stone == 0 {
+        if iterations == 1 {
+            return 1;
+        }
+
+        let count = blink(cache, 1, iterations - 1);
+        cache.insert((stone, iterations), count);
+
+        return count;
     }
 
-    {
-        let stone = 2048;
-        let [high, low] = blink(stone).unwrap_right();
+    let num_digits = stone.ilog10() + 1;
 
-        assert_eq!(high, 20);
-        assert_eq!(low, 48);
+    if num_digits % 2 != 0 {
+        if iterations == 1 {
+            return 1;
+        }
+
+        let count = blink(cache, stone * 2024, iterations - 1);
+        cache.insert((stone, iterations), count);
+
+        return count;
     }
-}
 
-#[test]
-fn try_splitting_halfway() {
-    let stone = 2048;
-    let [high, low] = split_halfway(stone);
+    if iterations == 1 {
+        return 2;
+    }
 
-    assert_eq!(high, 20);
-    assert_eq!(low, 48);
+    let (high, low) = split_halfway(stone);
+    let count = blink(cache, high, iterations - 1) + blink(cache, low, iterations - 1);
+
+    cache.insert((stone, iterations), count);
+    count
 }
