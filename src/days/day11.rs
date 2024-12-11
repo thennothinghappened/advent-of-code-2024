@@ -1,35 +1,36 @@
 use super::{DayResult, PartResult};
+use itertools::Itertools;
 use rustc_hash::{FxBuildHasher, FxHashMap};
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut cache = FxHashMap::<(u64, u64), u64>::with_capacity_and_hasher(120_000, FxBuildHasher);
-    let result_part1 = part1(input, &mut cache)?;
-    let result_part2 = part2(input, &mut cache)?;
-
-    Ok((result_part1, result_part2))
-}
-
-fn part1(input: &str, cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
-    let num_stones = input
+    let stones = input
         .lines()
         .next()
         .unwrap()
         .split_ascii_whitespace()
         .map(|stone| stone.parse::<u64>().unwrap())
-        .map(|stone| blink(cache, stone, 25))
+        .collect_vec();
+
+    let result_part1 = part1(&stones, &mut cache)?;
+    let result_part2 = part2(&stones, &mut cache)?;
+
+    Ok((result_part1, result_part2))
+}
+
+fn part1(stones: &[u64], cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
+    let num_stones = stones
+        .iter()
+        .map(|&stone| blink(cache, stone, 25))
         .sum::<u64>();
 
     Ok(num_stones.to_string())
 }
 
-fn part2(input: &str, cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
-    let num_stones = input
-        .lines()
-        .next()
-        .unwrap()
-        .split_ascii_whitespace()
-        .map(|stone| stone.parse::<u64>().unwrap())
-        .map(|stone| blink(cache, stone, 75))
+fn part2(stones: &[u64], cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
+    let num_stones = stones
+        .iter()
+        .map(|&stone| blink(cache, stone, 75))
         .sum::<u64>();
 
     Ok(num_stones.to_string())
