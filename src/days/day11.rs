@@ -1,10 +1,12 @@
 use super::{DayResult, PartResult};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxBuildHasher, FxHashMap};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    let mut cache = FxHashMap::<(u64, u64), u64>::default();
+    let mut cache = FxHashMap::<(u64, u64), u64>::with_capacity_and_hasher(120_000, FxBuildHasher);
+    let result_part1 = part1(input, &mut cache)?;
+    let result_part2 = part2(input, &mut cache)?;
 
-    Ok((part1(input, &mut cache)?, part2(input, &mut cache)?))
+    Ok((result_part1, result_part2))
 }
 
 fn part1(input: &str, cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
@@ -44,7 +46,9 @@ fn split_halfway(stone: u64) -> (u64, u64) {
 }
 
 fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) -> u64 {
-    if let Some(cached_entry) = cache.get(&(stone, iterations)) {
+    let cache_key = (stone, iterations);
+
+    if let Some(cached_entry) = cache.get(&cache_key) {
         return *cached_entry;
     }
 
@@ -54,7 +58,7 @@ fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) ->
         }
 
         let count = blink(cache, 1, iterations - 1);
-        cache.insert((stone, iterations), count);
+        cache.insert(cache_key, count);
 
         return count;
     }
@@ -67,7 +71,7 @@ fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) ->
         }
 
         let count = blink(cache, stone * 2024, iterations - 1);
-        cache.insert((stone, iterations), count);
+        cache.insert(cache_key, count);
 
         return count;
     }
@@ -79,6 +83,6 @@ fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) ->
     let (high, low) = split_halfway(stone);
     let count = blink(cache, high, iterations - 1) + blink(cache, low, iterations - 1);
 
-    cache.insert((stone, iterations), count);
+    cache.insert(cache_key, count);
     count
 }
