@@ -65,7 +65,7 @@ fn find_peaks(grid: &Vec<Vec<u32>>, from_pos: Pos, from_height: u32) -> Vec<Pos>
             let pos = from_pos + direction;
             let height = grid.get_2d(pos)?;
 
-            if *height - 1 != from_height {
+            if *height == 0 || *height - 1 != from_height {
                 return None;
             }
 
@@ -86,7 +86,7 @@ fn rate(grid: &Vec<Vec<u32>>, from_pos: Pos, from_height: u32) -> usize {
             let pos = from_pos + direction;
             let height = grid.get_2d(pos)?;
 
-            if *height - 1 != from_height {
+            if *height == 0 || *height - 1 != from_height {
                 return None;
             }
 
