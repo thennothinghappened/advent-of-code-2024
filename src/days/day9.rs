@@ -1,58 +1,92 @@
+use crate::utils::not_yet_implemented;
+
 use super::{DayResult, PartResult};
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
-    // 1. Parse input into mut Vec<Option<usize>>, where the usize represents the ID (incrementing).
-    // 2. Determine the first free space.
-    // 3. Iterate backwards, moving each block to the free space, and finding the next free space.
-    // 4. Checksum is given by sum of enumerating each block * their ID.
-
-    let mut fs: Vec<Option<usize>> = input
+    let fs = input
         .lines()
         .next()
         .unwrap()
         .chars()
-        .map(|char| char.to_digit(10).unwrap())
-        .enumerate()
-        .flat_map(|(index, count)| {
-            let block = match index % 2 {
-                0 => Some(index / 2),
-                _ => None,
-            };
+        .map(|char| char.to_digit(10).unwrap() as usize)
+        .collect_vec();
+    Ok((part1(&fs)?, part2(input)?))
+}
 
-            vec![block; count as usize]
-        })
-        .collect();
+fn part1(fs: &[usize]) -> PartResult {
+    // 1. Iterate forward and backwards over the FS blocks.
+    // 2. Pour the block's contents into the free block. If it runs out of space, move to the next
+    //    free block.
+    //
+    //    For each iteration of this, we'll be adding to the checksum.
 
-    while let Some(free_index) = fs.iter().position(|block| block.is_none()) {
-        let Some(file_index) = fs
-            .iter()
-            .enumerate()
-            .rev()
-            .find(|(_, block)| block.is_some())
-            .map(|(index, _)| index)
-        else {
-            break;
-        };
+    let mut checksum: usize = 0;
+    let mut free_index: usize = 1;
+    let mut block_index: usize = fs.len() - 1;
 
-        if file_index < free_index {
+    if block_index % 2 != 0 {
+        block_index -= 1;
+    }
+
+    let mut free_size = fs[free_index];
+    let mut block_size = fs[block_index];
+
+    // Initial block offsets things.
+    let mut free_offset = fs[0];
+
+    'big_loop: loop {
+        while free_size == 0 {
+            // Move to the next free block.
+            free_index += 2;
+
+            if free_index >= fs.len() {
+                break 'big_loop;
+            }
+
+            let skipped_block_index = free_index - 1;
+            let skipped_block_id = skipped_block_index / 2;
+            let mut skipped_block_size = fs[free_index - 1];
+
+            if skipped_block_index == block_index {
+                skipped_block_size = block_size;
+            }
+
+            for _ in 0..skipped_block_size {
+                checksum += free_offset * skipped_block_id;
+                free_offset += 1;
+            }
+
+            free_size = fs[free_index];
+        }
+
+        while block_size == 0 {
+            // Move to the next block to be moved.
+            block_index -= 2;
+
+            if block_index == 0 {
+                break 'big_loop;
+            }
+
+            block_size = fs[block_index];
+        }
+
+        if free_index >= block_index {
             break;
         }
 
-        fs.swap(file_index, free_index);
+        if block_index == 0 {
+            break;
+        }
+
+        checksum += free_offset * (block_index / 2);
+        block_size -= 1;
+        free_size -= 1;
+        free_offset += 1;
     }
 
-    Ok(fs
-        .iter()
-        .enumerate()
-        .filter_map(|(index, block)| block.map(|id| index * id))
-        .sum::<usize>()
-        .to_string())
+    Ok(checksum.to_string())
 }
 
 fn part2(input: &str) -> PartResult {
