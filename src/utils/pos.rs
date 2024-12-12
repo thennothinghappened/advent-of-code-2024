@@ -97,7 +97,7 @@ pub trait Index2d<T> {
     fn get_2d_unchecked(&self, index: Pos) -> &Self::Output;
 }
 
-impl<T> Index2d<Pos> for &Vec<Vec<T>> {
+impl<T> Index2d<Pos> for Vec<Vec<T>> {
     type Output = T;
 
     fn get_2d(&self, index: Pos) -> Option<&Self::Output> {
