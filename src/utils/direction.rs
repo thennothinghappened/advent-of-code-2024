@@ -25,6 +25,7 @@ impl std::ops::Add<Direction> for Pos {
     }
 }
 
+#[allow(dead_code)]
 impl Direction {
     pub fn turned_right(&self) -> Self {
         match self {
