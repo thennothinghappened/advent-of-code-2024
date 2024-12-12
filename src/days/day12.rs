@@ -18,13 +18,10 @@ fn part1(input: &str) -> PartResult {
         .map(|line| line.chars().map(Plant::new).collect_vec())
         .collect_vec();
 
-    let grid_height = grid.len();
-    let grid_width = grid[0].len();
-
     let mut sum: u64 = 0;
 
-    for y in 0..grid_height {
-        for x in 0..grid_width {
+    for y in 0..grid.len() {
+        for x in 0..grid[y].len() {
             let pos = Pos::new_from_usize_unchecked(x, y);
             let plant = *grid.get_2d_unchecked(pos);
 
