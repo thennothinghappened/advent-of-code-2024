@@ -96,10 +96,10 @@ impl From<i32> for Pos {
     }
 }
 
-impl std::ops::Add<i32> for Pos {
+impl std::ops::Mul<i32> for Pos {
     type Output = Pos;
 
-    fn add(self, rhs: i32) -> Self::Output {
+    fn mul(self, rhs: i32) -> Self::Output {
         Pos::new(self.x * rhs, self.y * rhs)
     }
 }
