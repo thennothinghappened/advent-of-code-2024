@@ -96,6 +96,14 @@ impl From<i32> for Pos {
     }
 }
 
+impl std::ops::Add<i32> for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: i32) -> Self::Output {
+        Pos::new(self.x * rhs, self.y * rhs)
+    }
+}
+
 /// Rust did not want to cooperate with me implementing `Index` to use with `Vec`.
 pub trait Index2d<T> {
     type Output;
