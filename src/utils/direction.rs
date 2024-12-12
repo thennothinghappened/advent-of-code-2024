@@ -26,7 +26,7 @@ impl std::ops::Add<Direction> for Pos {
 }
 
 impl Direction {
-    pub fn turned_right(&self) -> Direction {
+    pub fn turned_right(&self) -> Self {
         match self {
             Direction::Up => Direction::Right,
             Direction::Right => Direction::Down,
@@ -35,11 +35,20 @@ impl Direction {
         }
     }
 
+    pub fn opposite(&self) -> Self {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Right => Direction::Left,
+            Direction::Left => Direction::Right,
+        }
+    }
+
     pub fn is_vertical(&self) -> bool {
         match self {
             Direction::Up => true,
-            Direction::Right => false,
             Direction::Down => true,
+            Direction::Right => false,
             Direction::Left => false,
         }
     }
@@ -47,8 +56,8 @@ impl Direction {
     pub fn is_horizontal(&self) -> bool {
         match self {
             Direction::Up => false,
-            Direction::Right => true,
             Direction::Down => false,
+            Direction::Right => true,
             Direction::Left => true,
         }
     }
