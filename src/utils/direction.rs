@@ -34,6 +34,24 @@ impl Direction {
             Direction::Left => Direction::Up,
         }
     }
+
+    pub fn is_vertical(&self) -> bool {
+        match self {
+            Direction::Up => true,
+            Direction::Right => false,
+            Direction::Down => true,
+            Direction::Left => false,
+        }
+    }
+
+    pub fn is_horizontal(&self) -> bool {
+        match self {
+            Direction::Up => false,
+            Direction::Right => true,
+            Direction::Down => false,
+            Direction::Left => true,
+        }
+    }
 }
 
 impl From<Direction> for Pos {
