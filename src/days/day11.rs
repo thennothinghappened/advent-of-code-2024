@@ -1,39 +1,42 @@
 use super::{DayResult, PartResult};
-use itertools::Itertools;
-use rustc_hash::{FxBuildHasher, FxHashMap};
+use rustc_hash::FxHashMap;
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    let mut cache = FxHashMap::<(u64, u64), u64>::with_capacity_and_hasher(120_000, FxBuildHasher);
-    let stones = input
+    let mut stones = FxHashMap::<u64, u64>::default();
+
+    input
         .lines()
         .next()
         .unwrap()
         .split_ascii_whitespace()
         .map(|stone| stone.parse::<u64>().unwrap())
-        .collect_vec();
+        .for_each(|stone| {
+            stones
+                .entry(stone)
+                .and_modify(|count| *count += 1)
+                .or_insert(1);
+        });
 
-    let result_part1 = part1(&stones, &mut cache)?;
-    let result_part2 = part2(&stones, &mut cache)?;
+    let result_part1 = part1(&mut stones)?;
+    let result_part2 = part2(&mut stones)?;
 
     Ok((result_part1, result_part2))
 }
 
-fn part1(stones: &[u64], cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
-    let num_stones = stones
-        .iter()
-        .map(|&stone| blink(cache, stone, 25))
-        .sum::<u64>();
+fn part1(stones: &mut FxHashMap<u64, u64>) -> PartResult {
+    for _ in 1..=25 {
+        blink(stones);
+    }
 
-    Ok(num_stones.to_string())
+    Ok(stones.values().sum::<u64>().to_string())
 }
 
-fn part2(stones: &[u64], cache: &mut FxHashMap<(u64, u64), u64>) -> PartResult {
-    let num_stones = stones
-        .iter()
-        .map(|&stone| blink(cache, stone, 75))
-        .sum::<u64>();
+fn part2(stones: &mut FxHashMap<u64, u64>) -> PartResult {
+    for _ in 1..=50 {
+        blink(stones);
+    }
 
-    Ok(num_stones.to_string())
+    Ok(stones.values().sum::<u64>().to_string())
 }
 
 fn split_halfway(stone: u64) -> (u64, u64) {
@@ -46,44 +49,45 @@ fn split_halfway(stone: u64) -> (u64, u64) {
     (high, low)
 }
 
-fn blink(cache: &mut FxHashMap<(u64, u64), u64>, stone: u64, iterations: u64) -> u64 {
-    let cache_key = (stone, iterations);
+fn blink(stones: &mut FxHashMap<u64, u64>) {
+    // New method based on https://www.reddit.com/r/adventofcode/comments/1hbm0al/comment/m1hmola/
+    // as it turns out to actually be cheaper to take the hit of these repeated allocations
+    // than to have a continually growing cache (lots of reallocs!).
+    //
+    // Effectively we ditch recursion, because the order of the stones *does not matter*, so we can
+    // bulk-apply each operation to `n` stones with the same outcome.
 
-    if let Some(cached_entry) = cache.get(&cache_key) {
-        return *cached_entry;
-    }
+    let clone = stones.clone();
+    stones.clear();
 
-    if stone == 0 {
-        if iterations == 1 {
-            return 1;
+    for (stone, src_count) in clone.into_iter().filter(|(_, count)| *count > 0) {
+        if stone == 0 {
+            stones
+                .entry(1)
+                .and_modify(|count| *count += src_count)
+                .or_insert(src_count);
+            continue;
         }
 
-        let count = blink(cache, 1, iterations - 1);
-        cache.insert(cache_key, count);
+        let num_digits = stone.ilog10() + 1;
 
-        return count;
-    }
-
-    let num_digits = stone.ilog10() + 1;
-
-    if num_digits % 2 != 0 {
-        if iterations == 1 {
-            return 1;
+        if num_digits % 2 != 0 {
+            stones
+                .entry(stone * 2024)
+                .and_modify(|count| *count += src_count)
+                .or_insert(src_count);
+            continue;
         }
 
-        let count = blink(cache, stone * 2024, iterations - 1);
-        cache.insert(cache_key, count);
+        let (high, low) = split_halfway(stone);
 
-        return count;
+        stones
+            .entry(high)
+            .and_modify(|count| *count += src_count)
+            .or_insert(src_count);
+        stones
+            .entry(low)
+            .and_modify(|count| *count += src_count)
+            .or_insert(src_count);
     }
-
-    if iterations == 1 {
-        return 2;
-    }
-
-    let (high, low) = split_halfway(stone);
-    let count = blink(cache, high, iterations - 1) + blink(cache, low, iterations - 1);
-
-    cache.insert(cache_key, count);
-    count
 }
