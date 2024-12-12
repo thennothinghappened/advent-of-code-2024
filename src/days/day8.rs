@@ -33,7 +33,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
         for i in 0..antennas.len() {
             let src_antenna = antennas[i];
             for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
-                let antinode = src_antenna + (dest_antenna - src_antenna) * 2.into();
+                let antinode = src_antenna + (dest_antenna - src_antenna) * 2;
 
                 if antinode.is_positive()
                     && (antinode.x as usize) < grid_width
@@ -53,7 +53,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
 
             for dest_antenna in (0..antennas.len()).filter(|j| *j != i).map(|j| antennas[j]) {
                 for offset in 1..i32::MAX {
-                    let antinode = src_antenna + (dest_antenna - src_antenna) * offset.into();
+                    let antinode = src_antenna + (dest_antenna - src_antenna) * offset;
 
                     if !antinode.is_positive()
                         || (antinode.x as usize) >= grid_width
