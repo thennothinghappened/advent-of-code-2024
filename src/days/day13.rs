@@ -1,8 +1,5 @@
-use itertools::Itertools;
-
-use crate::utils::{not_yet_implemented, pos::Pos};
-
 use super::{DayResult, PartResult};
+use itertools::Itertools;
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let machines = input
