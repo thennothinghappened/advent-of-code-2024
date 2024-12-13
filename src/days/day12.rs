@@ -8,15 +8,25 @@ use crate::utils::{
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
     let mut grid = input
         .lines()
         .map(|line| line.chars().map(Plant::new).collect_vec())
         .collect_vec();
 
+    let p1_result = part1(&mut grid)?;
+
+    grid.iter_mut().for_each(|row| {
+        row.iter_mut().for_each(|plant| {
+            plant.seen = false;
+        })
+    });
+
+    let p2_result = part2(&mut grid)?;
+
+    Ok((p1_result, p2_result))
+}
+
+fn part1(grid: &mut Vec<Vec<Plant>>) -> PartResult {
     let mut sum: u64 = 0;
 
     for y in 0..grid.len() {
@@ -31,7 +41,7 @@ fn part1(input: &str) -> PartResult {
             let mut perimeter = 0;
             let mut area = 0;
 
-            define_region(&mut grid, plant.species, pos, &mut perimeter, &mut area);
+            define_region(grid, plant.species, pos, &mut perimeter, &mut area);
 
             sum += area * perimeter;
         }
@@ -40,27 +50,7 @@ fn part1(input: &str) -> PartResult {
     Ok(sum.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
-    // Like part 1, but instead of perimeter area, we want *edges*.
-    // uhhhhh........................................
-    //
-    // okay so part 1 has no sense of continuity right
-    //
-    // okay also
-    // if we know we're starting at the top-most left-most position that matches the shape,
-    // then we know that all of the members of the shape must be either to the right, or below
-    // this one.
-    //
-    // we can also say that every row, in isolation, always has 4 sides.
-    // the number of sides a row has is affected by the number of disjoints it has.
-    // i.e., the number of times it sees a connected piece above or below, where there is not ALSO
-    // a connected piece adjacent to that.
-
-    let mut grid = input
-        .lines()
-        .map(|line| line.chars().map(Plant::new).collect_vec())
-        .collect_vec();
-
+fn part2(grid: &mut Vec<Vec<Plant>>) -> PartResult {
     let mut sum: u64 = 0;
 
     for y in 0..grid.len() {
@@ -76,7 +66,7 @@ fn part2(input: &str) -> PartResult {
             let mut corners = 0;
             let mut area = 0;
 
-            define_region_p2(&mut grid, plant.species, pos, &mut corners, &mut area);
+            define_region_p2(grid, plant.species, pos, &mut corners, &mut area);
 
             sum += area * corners;
         }
