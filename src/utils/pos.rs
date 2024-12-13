@@ -22,6 +22,16 @@ impl Pos {
         self.x >= 0 && self.y >= 0
     }
 
+    /// Create a new position consisting of the horizontal component of this position.
+    pub fn horizontal(&self) -> Self {
+        Pos { x: self.x, y: 0 }
+    }
+
+    /// Create a new position consisting of the vertical component of this position.
+    pub fn vertical(&self) -> Self {
+        Pos { x: 0, y: self.y }
+    }
+
     pub fn is_in_rect(&self, top_left: &Pos, bottom_right: &Pos) -> bool {
         self.x >= top_left.x
             && self.y >= top_left.y
