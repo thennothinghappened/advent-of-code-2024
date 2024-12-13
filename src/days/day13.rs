@@ -54,6 +54,25 @@ fn part1(machines: &[Machine]) -> PartResult {
     Ok(spent_tokens.to_string())
 }
 
+fn part2(machines: &[Machine]) -> PartResult {
+    let spent_tokens = machines
+        .iter()
+        .filter_map(|machine| {
+            calculate_ratios(
+                machine.prize.x + 10_000_000_000_000,
+                machine.prize.y + 10_000_000_000_000,
+                machine.a.x,
+                machine.a.y,
+                machine.b.x,
+                machine.b.y,
+            )
+        })
+        .map(|(a_times, b_times)| a_times * A_COST + b_times * B_COST)
+        .sum::<i64>();
+
+    Ok(spent_tokens.to_string())
+}
+
 fn calculate_ratios(px: i64, py: i64, ax: i64, ay: i64, bx: i64, by: i64) -> Option<(i64, i64)> {
     let a_dividend = (bx * py) - (by * px);
     let a_divisor = (ay * bx) - (ax * by);
@@ -73,12 +92,6 @@ fn calculate_ratios(px: i64, py: i64, ax: i64, ay: i64, bx: i64, by: i64) -> Opt
 
     let b_times = b_dividend / b_divisor;
     Some((a_times, b_times))
-}
-
-fn part2(machines: &[Machine]) -> PartResult {
-    let mut spent_tokens = 0;
-
-    Ok(spent_tokens.to_string())
 }
 
 #[derive(Debug)]
