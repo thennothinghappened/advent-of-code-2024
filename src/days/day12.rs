@@ -1,9 +1,7 @@
 use itertools::Itertools;
 
 use crate::utils::{
-    boxdraw,
-    direction::{Direction, DIRECTIONS},
-    not_yet_implemented,
+    direction::DIRECTIONS,
     pos::{Index2d, Pos},
 };
 
