@@ -1,5 +1,6 @@
 use std::error::Error;
 
+pub(crate) mod boxdraw;
 pub(crate) mod direction;
 pub(crate) mod iter;
 pub(crate) mod pos;
