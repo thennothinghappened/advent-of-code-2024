@@ -109,7 +109,7 @@ fn define_region(
     }
 
     *area += 1;
-    plant.mark();
+    plant.seen = true;
 
     for direction in DIRECTIONS {
         define_region(grid, species, pos + direction, perimeter, area);
@@ -138,13 +138,12 @@ fn define_region_p2(
         return;
     }
 
-    plant.mark();
+    plant.seen = true;
     *area += 1;
 
     for corner in CORNER_DIRECTIONS {
         let vert_pos = pos + corner.vertical();
         let hor_pos = pos + corner.horizontal();
-        let corner_pos = pos + corner;
 
         let vert_missing = grid
             .get_2d(vert_pos)
@@ -156,32 +155,22 @@ fn define_region_p2(
             .map(|plant| plant.species != species)
             .unwrap_or(true);
 
-        let corner_missing = grid
-            .get_2d(corner_pos)
-            .map(|plant| plant.species != species)
-            .unwrap_or(true);
-
         match (vert_missing, hor_missing) {
             (true, true) => {
                 // Convex corner.
                 *corners += 1;
             }
-            (true, false) => {
-                if !corner_missing && !grid.get_2d_unchecked(corner_pos).seen {
-                    define_region_p2(grid, species, corner_pos, corners, area);
-                }
-            }
-            (false, true) => {
-                if !corner_missing && !grid.get_2d_unchecked(corner_pos).seen {
-                    define_region_p2(grid, species, corner_pos, corners, area);
-                }
-            }
             (false, false) => {
                 // Concave corner.
-                if corner_missing {
+                if grid
+                    .get_2d(pos + corner)
+                    .map(|plant| plant.species != species)
+                    .unwrap_or(true)
+                {
                     *corners += 1;
                 }
             }
+            _ => {}
         }
 
         define_region_p2(grid, species, vert_pos, corners, area);
@@ -201,9 +190,5 @@ impl Plant {
             species,
             seen: false,
         }
-    }
-
-    fn mark(&mut self) {
-        self.seen = true;
     }
 }
