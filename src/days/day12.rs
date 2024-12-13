@@ -10,7 +10,7 @@ use super::{DayResult, PartResult};
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut grid = input
         .lines()
-        .map(|line| line.chars().map(Plant::new).collect_vec())
+        .map(|line| line.bytes().map(Plant::new).collect_vec())
         .collect_vec();
 
     let p1_result = part1(&mut grid)?;
@@ -77,7 +77,7 @@ fn part2(grid: &mut Vec<Vec<Plant>>) -> PartResult {
 
 fn define_region(
     grid: &mut Vec<Vec<Plant>>,
-    species: char,
+    species: u8,
     pos: Pos,
     perimeter: &mut u64,
     area: &mut u64,
@@ -106,7 +106,7 @@ fn define_region(
 
 fn define_region_p2(
     grid: &mut Vec<Vec<Plant>>,
-    species: char,
+    species: u8,
     pos: Pos,
     corners: &mut u64,
     area: &mut u64,
@@ -168,12 +168,12 @@ fn define_region_p2(
 
 #[derive(Clone, Copy)]
 struct Plant {
-    species: char,
+    species: u8,
     seen: bool,
 }
 
 impl Plant {
-    fn new(species: char) -> Self {
+    fn new(species: u8) -> Self {
         Plant {
             species,
             seen: false,
