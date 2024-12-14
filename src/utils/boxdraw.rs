@@ -34,8 +34,6 @@ where
         .map(|_| (0..grid_width * 3).map(|_| EMPTY).collect_vec())
         .collect_vec();
 
-    // Let's iterate forwards over the grid, until we find our first valid position. This will
-    // represent a top-left corner.
     for y in 0..grid_height {
         for x in 0..grid_width {
             let pos = Pos::new_from_usize_unchecked(x, y);
@@ -64,26 +62,23 @@ where
                 let front_missing = not_within(front_check_pos);
                 let adjacent_missing = not_within(adjacent_check_pos);
 
-                let corner_char = match (front_missing, adjacent_missing) {
-                    // Convex corner.
-                    (true, true) => direction_corner_convex(direction),
-                    // Concave corner.
-                    (false, false) => {
-                        if not_within(pos + corner) {
-                            direction_corner_concave(direction)
-                        } else {
-                            FILLED
-                        }
-                    }
-                    (false, true) => direction_edge_char(direction.turned_right()),
-                    (true, false) => direction_edge_char(direction),
-                };
-
                 let Some(outgrid_dest_on_corner) = outgrid.get_2d_mut(outgrid_pos + corner) else {
                     continue;
                 };
 
-                *outgrid_dest_on_corner = corner_char;
+                *outgrid_dest_on_corner = match (front_missing, adjacent_missing) {
+                    // Convex corner.
+                    (true, true) => direction_corner_convex(direction),
+
+                    // Concave corner.
+                    (false, false) => match not_within(pos + corner) {
+                        true => direction_corner_convex(direction.opposite()),
+                        false => FILLED,
+                    },
+
+                    (false, true) => direction_edge_char(direction.turned_right()),
+                    (true, false) => direction_edge_char(direction),
+                };
             }
         }
     }
@@ -117,10 +112,6 @@ fn direction_corner_convex(direction: Direction) -> char {
         Direction::Down => '└',
         Direction::Left => '┌',
     }
-}
-
-fn direction_corner_concave(direction: Direction) -> char {
-    direction_corner_convex(direction.opposite())
 }
 
 #[test]
