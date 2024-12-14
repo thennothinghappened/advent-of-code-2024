@@ -151,19 +151,29 @@ fn test_shape_outline() {
 
     #[rustfmt::skip]
     const EXPECTED: &str = 
-"...............
-...............
-...............
-...┌───────┐...
-...│       │...
-...└──┐ ┌──┘...
-";
+"╔═══════════════╗
+║               ║
+║               ║
+║   ┌───────┐   ║
+║   │╳╳╳╳╳╳╳│   ║
+║   └──┐╳┌──┘   ║
+║      │╳│   ┌─┐║
+║      │╳│   │╳│║
+║      │╳│   │╳│║
+║   ┌──┘╳└───┘╳│║
+║   │╳╳╳╳╳╳╳╳╳╳│║
+║   └──┐╳╳╳╳╳╳╳│║
+║      │╳╳╳╳╳╳╳│║
+║      │╳╳╳╳╳╳╳│║
+║      └───────┘║
+║               ║
+╚═══════════════╝";
 
     let output = draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
         *GRID.flat_index(GRID_WIDTH, pos) == 1
     });
 
-    println!("{}", output);
+    println!("Expected:\n{EXPECTED}\n\nActual:\n{output}");
 
-    // assert_eq!(output, EXPECTED);
+    assert_eq!(output, EXPECTED);
 }
