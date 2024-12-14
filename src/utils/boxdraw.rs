@@ -52,42 +52,50 @@ where
                 let adjacent_check_pos = pos + direction.turned_right();
                 let corner = Pos::from(direction) + direction.turned_right();
 
-                *outgrid.get_2d_mut_unchecked(outgrid_pos + direction) =
-                    match not_within(pos + direction) {
-                        true => direction_edge_char(direction),
-                        false => FILLED,
-                    };
+                let Some(outgrid_dest_on_axis) = outgrid.get_2d_mut(outgrid_pos + direction) else {
+                    continue;
+                };
+
+                *outgrid_dest_on_axis = match not_within(pos + direction) {
+                    true => direction_edge_char(direction),
+                    false => FILLED,
+                };
 
                 let front_missing = not_within(front_check_pos);
                 let adjacent_missing = not_within(adjacent_check_pos);
 
-                *outgrid.get_2d_mut_unchecked(outgrid_pos + corner) =
-                    match (front_missing, adjacent_missing) {
-                        // Convex corner.
-                        (true, true) => direction_corner_convex(direction),
-                        // Concave corner.
-                        (false, false) => {
-                            if not_within(pos + corner) {
-                                direction_corner_concave(direction)
-                            } else {
-                                FILLED
-                            }
+                let corner_char = match (front_missing, adjacent_missing) {
+                    // Convex corner.
+                    (true, true) => direction_corner_convex(direction),
+                    // Concave corner.
+                    (false, false) => {
+                        if not_within(pos + corner) {
+                            direction_corner_concave(direction)
+                        } else {
+                            FILLED
                         }
-                        _ => {
-                            *outgrid.get_2d_mut_unchecked(outgrid_pos + direction) =
-                                match not_within(pos + direction) {
-                                    true => direction_edge_char(direction),
-                                    false => FILLED,
-                                };
-                            // TODO: fix this edge case. (heh)
-                            match direction {
-                                Direction::Up => '─',
-                                Direction::Right => '─',
-                                Direction::Down => '│',
-                                Direction::Left => '│',
-                            }
+                    }
+                    _ => {
+                        *outgrid.get_2d_mut_unchecked(outgrid_pos + direction) =
+                            match not_within(pos + direction) {
+                                true => direction_edge_char(direction),
+                                false => FILLED,
+                            };
+                        // TODO: fix this edge case. (heh)
+                        match direction {
+                            Direction::Up => '─',
+                            Direction::Right => '─',
+                            Direction::Down => '│',
+                            Direction::Left => '│',
                         }
-                    };
+                    }
+                };
+
+                let Some(outgrid_dest_on_corner) = outgrid.get_2d_mut(outgrid_pos + corner) else {
+                    continue;
+                };
+
+                *outgrid_dest_on_corner = corner_char;
             }
         }
     }
