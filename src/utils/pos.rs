@@ -100,6 +100,28 @@ impl std::ops::Mul for Pos {
     }
 }
 
+impl std::ops::Div for Pos {
+    type Output = Pos;
+
+    fn div(self, rhs: Pos) -> Self::Output {
+        Pos {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl std::ops::Rem for Pos {
+    type Output = Pos;
+
+    fn rem(self, rhs: Pos) -> Self::Output {
+        Pos {
+            x: self.x % rhs.x,
+            y: self.y % rhs.y,
+        }
+    }
+}
+
 impl From<i32> for Pos {
     fn from(value: i32) -> Self {
         Pos { x: value, y: value }
