@@ -1,22 +1,13 @@
+use std::io;
+
 use itertools::Itertools;
 
-use crate::utils::{
-    direction::Direction,
-    not_yet_implemented,
-    pos::{self, Pos},
-};
-
 use super::{DayResult, PartResult};
-
-pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
+use crate::utils::{boxdraw, not_yet_implemented, pos::Pos};
 
 const GRID_DIMENSIONS: Pos = Pos { x: 101, y: 103 };
 
-fn part1(input: &str) -> PartResult {
-    const STEPS: i32 = 100;
-
+pub(crate) fn solve(input: &str) -> DayResult {
     let robots: Vec<Robot> = input
         .lines()
         .map(|line| {
@@ -34,6 +25,12 @@ fn part1(input: &str) -> PartResult {
                 .into()
         })
         .collect_vec();
+
+    Ok((part1(&robots)?, part2(&robots)?))
+}
+
+fn part1(robots: &[Robot]) -> PartResult {
+    const STEPS: i32 = 100;
 
     let mut top_left = 0;
     let mut top_right = 0;
@@ -59,7 +56,49 @@ fn part1(input: &str) -> PartResult {
     Ok(safety_factor.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
+fn part2(robots: &[Robot]) -> PartResult {
+    for steps in 0..i32::MAX {
+        let positions = robots
+            .iter()
+            .map(|robot| robot.move_steps(steps, GRID_DIMENSIONS))
+            .collect_vec();
+
+        let mut should_display = false;
+
+        for y in (0..GRID_DIMENSIONS.y).step_by(6) {
+            for x in 0..GRID_DIMENSIONS.x {
+                let pos = Pos { x, y };
+
+                // X..
+                // .X.
+                // ..X
+                if positions.contains(&pos)
+                    && positions.contains(&(pos - 1))
+                    && positions.contains(&(pos - 2))
+                    && positions.contains(&(pos - 3))
+                    && positions.contains(&(pos - 4))
+                    && positions.contains(&(pos - 5))
+                {
+                    should_display = true;
+                    break;
+                }
+            }
+        }
+
+        if should_display {
+            println!(
+                "After {} steps:\n{}",
+                steps,
+                boxdraw::draw_shape_outline(
+                    GRID_DIMENSIONS.x as usize,
+                    GRID_DIMENSIONS.y as usize,
+                    |pos| positions.contains(&pos)
+                )
+            );
+            let _ = io::stdin().read_line(&mut String::new()).unwrap();
+        }
+    }
+
     not_yet_implemented()
 }
 
