@@ -106,6 +106,12 @@ impl From<i32> for Pos {
     }
 }
 
+impl From<(i32, i32)> for Pos {
+    fn from((x, y): (i32, i32)) -> Self {
+        Pos { x, y }
+    }
+}
+
 impl std::ops::Mul<i32> for Pos {
     type Output = Pos;
 
