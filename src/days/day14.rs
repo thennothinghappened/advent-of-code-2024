@@ -73,6 +73,8 @@ impl Robot {
     fn move_steps(&self, steps: i32, grid_dimensions: Pos) -> Pos {
         let raw_displacement = self.velocity * steps;
 
+        // I am going to detonate whoever decided that `%` should not be the wrapping version.
+        // This cost me literal hours. A use of `%` instead of `.rem_euclid()`.
         Pos {
             x: (self.pos.x + raw_displacement.x).rem_euclid(grid_dimensions.x),
             y: (self.pos.y + raw_displacement.y).rem_euclid(grid_dimensions.y),
