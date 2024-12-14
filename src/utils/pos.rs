@@ -134,11 +134,43 @@ impl From<(i32, i32)> for Pos {
     }
 }
 
+impl std::ops::Add<i32> for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: i32) -> Self::Output {
+        Pos::new(self.x + rhs, self.y + rhs)
+    }
+}
+
+impl std::ops::Sub<i32> for Pos {
+    type Output = Pos;
+
+    fn sub(self, rhs: i32) -> Self::Output {
+        Pos::new(self.x - rhs, self.y - rhs)
+    }
+}
+
 impl std::ops::Mul<i32> for Pos {
     type Output = Pos;
 
     fn mul(self, rhs: i32) -> Self::Output {
         Pos::new(self.x * rhs, self.y * rhs)
+    }
+}
+
+impl std::ops::Div<i32> for Pos {
+    type Output = Pos;
+
+    fn div(self, rhs: i32) -> Self::Output {
+        Pos::new(self.x / rhs, self.y / rhs)
+    }
+}
+
+impl std::ops::Rem<i32> for Pos {
+    type Output = Pos;
+
+    fn rem(self, rhs: i32) -> Self::Output {
+        Pos::new(self.x % rhs, self.y % rhs)
     }
 }
 
