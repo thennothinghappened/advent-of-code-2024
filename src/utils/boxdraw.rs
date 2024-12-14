@@ -75,20 +75,8 @@ where
                             FILLED
                         }
                     }
-                    _ => {
-                        *outgrid.get_2d_mut_unchecked(outgrid_pos + direction) =
-                            match not_within(pos + direction) {
-                                true => direction_edge_char(direction),
-                                false => FILLED,
-                            };
-                        // TODO: fix this edge case. (heh)
-                        match direction {
-                            Direction::Up => '─',
-                            Direction::Right => '─',
-                            Direction::Down => '│',
-                            Direction::Left => '│',
-                        }
-                    }
+                    (false, true) => direction_edge_char(direction.turned_right()),
+                    (true, false) => direction_edge_char(direction),
                 };
 
                 let Some(outgrid_dest_on_corner) = outgrid.get_2d_mut(outgrid_pos + corner) else {
