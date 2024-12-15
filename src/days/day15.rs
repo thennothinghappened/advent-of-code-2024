@@ -12,14 +12,10 @@ use crate::utils::{
 use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
-    Ok((part1(input)?, part2(input)?))
-}
-
-fn part1(input: &str) -> PartResult {
     let mut robot_pos = Pos { x: 0, y: 0 };
 
     let mut lines = input.lines();
-    let mut grid = lines
+    let mut p1_grid = lines
         .by_ref()
         .take_while(|line| !line.is_empty())
         .enumerate()
@@ -40,16 +36,44 @@ fn part1(input: &str) -> PartResult {
         })
         .collect_vec();
 
-    for move_dir in lines.join("").chars().map(|char| match char {
-        '^' => Direction::Up,
-        '>' => Direction::Right,
-        'v' => Direction::Down,
-        '<' => Direction::Left,
-        _ => panic!("Invalid direction to move!"),
-    }) {
+    let mut p2_grid = p1_grid
+        .iter()
+        .map(|row| {
+            row.iter()
+                .flat_map(|tile| match tile {
+                    Tile::Air => [DWTile::Air, DWTile::Air],
+                    Tile::Wall => [DWTile::Wall, DWTile::Wall],
+                    Tile::Box => [DWTile::BoxLeft, DWTile::BoxRight],
+                })
+                .collect_vec()
+        })
+        .collect_vec();
+
+    let moves = lines
+        .join("")
+        .chars()
+        .map(|char| match char {
+            '^' => Direction::Up,
+            '>' => Direction::Right,
+            'v' => Direction::Down,
+            '<' => Direction::Left,
+            _ => panic!("Invalid direction to move!"),
+        })
+        .collect_vec();
+
+    Ok((
+        part1(&mut p1_grid, &moves, robot_pos)?,
+        part2(&mut p2_grid, &moves, robot_pos)?,
+    ))
+}
+
+fn part1(grid: &mut Vec<Vec<Tile>>, moves: &[Direction], robot_initial_pos: Pos) -> PartResult {
+    let mut robot_pos = robot_initial_pos;
+
+    for &move_dir in moves {
         let target = robot_pos + move_dir;
 
-        // debug_show_state(&grid, robot_pos);
+        // debug_show_state(grid, robot_pos);
         // println!("Next Move: {:?}", move_dir);
         // wait_for_user();
 
@@ -65,7 +89,7 @@ fn part1(input: &str) -> PartResult {
         }
 
         // 'ight, we've dealt with the easy paths, now we just care about the box moving logic.
-        let Some(free_pos) = find_air_in_direction(&grid, target, move_dir) else {
+        let Some(free_pos) = find_air_in_direction(grid, target, move_dir) else {
             continue;
         };
 
@@ -92,44 +116,12 @@ fn part1(input: &str) -> PartResult {
     Ok(gps_sum.to_string())
 }
 
-fn part2(input: &str) -> PartResult {
-    let mut robot_pos = Pos { x: 0, y: 0 };
+fn part2(grid: &mut Vec<Vec<DWTile>>, moves: &[Direction], robot_initial_pos: Pos) -> PartResult {
+    let mut robot_pos = robot_initial_pos;
 
-    let mut lines = input.lines();
-    let mut grid = lines
-        .by_ref()
-        .take_while(|line| !line.is_empty())
-        .enumerate()
-        .map(|(y, line)| {
-            line.chars()
-                .enumerate()
-                .flat_map(|(x, char)| match char {
-                    '.' => [DWTile::Air, DWTile::Air],
-                    '#' => [DWTile::Wall, DWTile::Wall],
-                    'O' => [DWTile::BoxLeft, DWTile::BoxRight],
-                    '@' => {
-                        robot_pos = Pos::new_from_usize_unchecked(x * 2, y);
-                        [DWTile::Air, DWTile::Air]
-                    }
-                    _ => panic!("Invalid char in grid!"),
-                })
-                .collect_vec()
-        })
-        .collect_vec();
-
-    for move_dir in lines.join("").chars().map(|char| match char {
-        '^' => Direction::Up,
-        '>' => Direction::Right,
-        'v' => Direction::Down,
-        '<' => Direction::Left,
-        _ => panic!("Invalid direction to move!"),
-    }) {
+    'moves_loop: for &move_dir in moves {
         let target = robot_pos + move_dir;
         let target_tile = *grid.get_2d_unchecked(target);
-
-        // debug_show_state(&grid, robot_pos);
-        // println!("\n-----------\nBelow Move: {:?}", move_dir);
-        // wait_for_user();
 
         match target_tile {
             DWTile::Air => {
@@ -167,98 +159,73 @@ fn part2(input: &str) -> PartResult {
                     _ => unreachable!(),
                 };
             }
-        } else {
-            // shenanigans afoot!
 
-            // 1. Discover all the boxes in our way (a tree!)
-            // 2. For the final lot on each branch, ensure we can move 'em.
-            // 3. Starting from the finals and working backwards, move each box to its new position.
+            robot_pos = target;
+            continue;
+        }
 
-            // List of x-positions of the boxes to be moved. A new row is appended for each y
-            // increment away from the target.
-            let mut box_positions = Vec::<FxHashSet<i32>>::new();
-            let mut can_be_done = true;
+        // shenanigans afoot!
 
-            box_positions.push({
-                let mut next: FxHashSet<i32> = FxHashSet::default();
+        // 1. Discover all the boxes in our way (a tree!)
+        // 2. For the final lot on each branch, ensure we can move 'em.
+        // 3. Starting from the finals and working backwards, move each box to its new position.
 
-                next.insert(target.x);
-                next.insert(match target_tile {
-                    DWTile::BoxLeft => target.x + 1,
-                    DWTile::BoxRight => target.x - 1,
-                    _ => unreachable!(),
-                });
+        // List of x-positions of the boxes to be moved. A new row is appended for each y
+        // increment away from the target.
+        let mut box_positions = Vec::<FxHashSet<i32>>::new();
 
-                next
+        box_positions.push({
+            let mut next: FxHashSet<i32> = FxHashSet::default();
+
+            next.insert(target.x);
+            next.insert(match target_tile {
+                DWTile::BoxLeft => target.x + 1,
+                DWTile::BoxRight => target.x - 1,
+                _ => unreachable!(),
             });
 
-            'find_tree: loop {
-                let mut y = target.y;
+            next
+        });
 
-                if move_dir == Direction::Up {
-                    y -= box_positions.len() as i32;
-                } else {
-                    y += box_positions.len() as i32;
-                }
+        loop {
+            let y = target.y + (Pos::from(move_dir).y * box_positions.len() as i32);
+            let prev = box_positions.last().unwrap();
+            let mut next: FxHashSet<i32> = FxHashSet::default();
 
-                let prev = box_positions.last().unwrap();
-                let mut next: FxHashSet<i32> = FxHashSet::default();
-
-                if y == 0 || y == grid.len() as i32 {
-                    can_be_done = false;
-                    break 'find_tree;
-                }
-
-                for &x in prev {
-                    let ahead = Pos { x, y };
-                    let ahead_tile = grid.get_2d_unchecked(ahead);
-
-                    match ahead_tile {
-                        DWTile::Air => continue,
-                        DWTile::Wall => {
-                            // println!("wall @ {} blocks our path!", ahead);
-                            can_be_done = false;
-                            break 'find_tree;
-                        }
-                        DWTile::BoxLeft => next.insert(x + 1),
-                        DWTile::BoxRight => next.insert(x - 1),
-                    };
-
-                    next.insert(x);
-                }
-
-                if next.is_empty() {
-                    break;
-                }
-
-                box_positions.push(next);
+            if y == 0 || y == grid.len() as i32 {
+                continue 'moves_loop;
             }
 
-            // println!("{:?}", box_positions);
+            for &x in prev {
+                let ahead = Pos { x, y };
+                let ahead_tile = grid.get_2d_unchecked(ahead);
 
-            if !can_be_done {
-                // println!("it cannot be done");
-                continue;
+                match ahead_tile {
+                    DWTile::Air => continue,
+                    DWTile::Wall => continue 'moves_loop,
+                    DWTile::BoxLeft => next.insert(x + 1),
+                    DWTile::BoxRight => next.insert(x - 1),
+                };
+
+                next.insert(x);
             }
 
-            for (y_offset, row) in box_positions.iter().enumerate().rev() {
-                let offset_direction: i32 = if move_dir == Direction::Up { -1 } else { 1 };
-                let y = target.y + (y_offset as i32) * offset_direction;
+            if next.is_empty() {
+                break;
+            }
 
-                for &x in row {
-                    let src_pos = Pos { x, y };
-                    let dest_pos = src_pos + move_dir;
+            box_positions.push(next);
+        }
 
-                    // println!(
-                    //     "{} => {} (move direction: {:?}, y: {}, y_offset: {})",
-                    //     src_pos, dest_pos, move_dir, y, y_offset
-                    // );
+        for (y_offset, row) in box_positions.iter().enumerate().rev() {
+            let offset_direction: i32 = Pos::from(move_dir).y;
+            let y = target.y + (y_offset as i32) * offset_direction;
 
-                    *grid.get_2d_mut_unchecked(dest_pos) = *grid.get_2d_unchecked(src_pos);
-                    *grid.get_2d_mut_unchecked(src_pos) = DWTile::Air;
+            for &x in row {
+                let src_pos = Pos { x, y };
+                let dest_pos = src_pos + move_dir;
 
-                    // debug_show_state(&grid, robot_pos);
-                }
+                grid.swap_2d_unchecked(src_pos, dest_pos);
             }
         }
 
