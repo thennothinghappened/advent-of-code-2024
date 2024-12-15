@@ -136,7 +136,7 @@ fn part2(grid: &mut Vec<Vec<DWTile>>, moves: &[Direction], robot_initial_pos: Po
 
         if move_dir.is_horizontal() {
             // we've gotta actually move the whole row across this time!
-            let Some(free) = p2_find_air_horizontal(&grid, target, move_dir) else {
+            let Some(free) = p2_find_air_horizontal(grid, target, move_dir) else {
                 continue;
             };
 
@@ -294,28 +294,6 @@ fn p2_find_air_horizontal(
     None
 }
 
-fn debug_show_state<T: Copy>(grid: &[Vec<T>], robot_pos: Pos)
-where
-    char: From<T>,
-{
-    println!(
-        "{}",
-        grid.iter()
-            .enumerate()
-            .map(|(y, row)| row
-                .iter()
-                .enumerate()
-                .map(
-                    move |(x, tile)| match Pos::new_from_usize_unchecked(x, y) == robot_pos {
-                        true => '@',
-                        false => char::from(*tile),
-                    }
-                )
-                .join(""))
-            .join("\n")
-    );
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tile {
     Air,
@@ -329,25 +307,4 @@ enum DWTile {
     Wall,
     BoxLeft,
     BoxRight,
-}
-
-impl From<Tile> for char {
-    fn from(value: Tile) -> Self {
-        match value {
-            Tile::Air => '.',
-            Tile::Wall => '#',
-            Tile::Box => 'O',
-        }
-    }
-}
-
-impl From<DWTile> for char {
-    fn from(value: DWTile) -> Self {
-        match value {
-            DWTile::Air => '.',
-            DWTile::Wall => '#',
-            DWTile::BoxLeft => '[',
-            DWTile::BoxRight => ']',
-        }
-    }
 }
