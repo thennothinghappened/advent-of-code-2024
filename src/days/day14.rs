@@ -3,7 +3,10 @@ use std::io;
 use itertools::Itertools;
 
 use super::{DayResult, PartResult};
-use crate::utils::{boxdraw, not_yet_implemented, pos::Pos};
+use crate::utils::{
+    boxdraw, not_yet_implemented,
+    pos::{Index2d, Pos},
+};
 
 const GRID_DIMENSIONS: Pos = Pos { x: 101, y: 103 };
 
@@ -30,15 +33,34 @@ pub(crate) fn solve(input: &str) -> DayResult {
 }
 
 fn part1(robots: &[Robot]) -> PartResult {
-    const STEPS: i32 = 100;
+    Ok(calc_safety_factor(robots, 100).to_string())
+}
 
+fn part2(robots: &[Robot]) -> PartResult {
+    // TODO: ideally not a bruteforce but better than nothing!!! we'll come back to this.
+    const STEPS_TILL_LOOP: i32 = GRID_DIMENSIONS.x * GRID_DIMENSIONS.y;
+
+    let mut lowest_safety_factor = (i32::MAX, i32::MAX);
+
+    for steps in 0..STEPS_TILL_LOOP {
+        let safety_factor = calc_safety_factor(robots, steps);
+
+        if safety_factor < lowest_safety_factor.0 {
+            lowest_safety_factor = (safety_factor, steps);
+        }
+    }
+
+    Ok(lowest_safety_factor.1.to_string())
+}
+
+fn calc_safety_factor(robots: &[Robot], steps: i32) -> i32 {
     let mut top_left = 0;
     let mut top_right = 0;
     let mut bottom_left = 0;
     let mut bottom_right = 0;
 
     for robot in robots {
-        let forecast_pos = robot.move_steps(STEPS, GRID_DIMENSIONS);
+        let forecast_pos = robot.move_steps(steps, GRID_DIMENSIONS);
 
         let Some(quadrant) = Quadrant::of_pos(forecast_pos, GRID_DIMENSIONS) else {
             continue;
@@ -52,54 +74,7 @@ fn part1(robots: &[Robot]) -> PartResult {
         } += 1;
     }
 
-    let safety_factor = top_left * top_right * bottom_left * bottom_right;
-    Ok(safety_factor.to_string())
-}
-
-fn part2(robots: &[Robot]) -> PartResult {
-    for steps in 0..i32::MAX {
-        let positions = robots
-            .iter()
-            .map(|robot| robot.move_steps(steps, GRID_DIMENSIONS))
-            .collect_vec();
-
-        let mut should_display = false;
-
-        for y in (0..GRID_DIMENSIONS.y).step_by(6) {
-            for x in 0..GRID_DIMENSIONS.x {
-                let pos = Pos { x, y };
-
-                // X..
-                // .X.
-                // ..X
-                if positions.contains(&pos)
-                    && positions.contains(&(pos - 1))
-                    && positions.contains(&(pos - 2))
-                    && positions.contains(&(pos - 3))
-                    && positions.contains(&(pos - 4))
-                    && positions.contains(&(pos - 5))
-                {
-                    should_display = true;
-                    break;
-                }
-            }
-        }
-
-        if should_display {
-            println!(
-                "After {} steps:\n{}",
-                steps,
-                boxdraw::draw_shape_outline(
-                    GRID_DIMENSIONS.x as usize,
-                    GRID_DIMENSIONS.y as usize,
-                    |pos| positions.contains(&pos)
-                )
-            );
-            let _ = io::stdin().read_line(&mut String::new()).unwrap();
-        }
-    }
-
-    not_yet_implemented()
+    top_left * top_right * bottom_left * bottom_right
 }
 
 #[derive(Debug, Clone, Copy)]
