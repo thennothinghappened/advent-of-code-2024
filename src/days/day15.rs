@@ -48,8 +48,8 @@ fn part1(input: &str) -> PartResult {
     }) {
         let target = robot_pos + move_dir;
 
-        debug_show_state(&grid, robot_pos);
-        println!("Next Move: {:?}", move_dir);
+        // debug_show_state(&grid, robot_pos);
+        // println!("Next Move: {:?}", move_dir);
         // wait_for_user();
 
         match grid.get_2d_unchecked(target) {
@@ -74,7 +74,21 @@ fn part1(input: &str) -> PartResult {
         robot_pos = target;
     }
 
-    not_yet_implemented()
+    let gps_sum = grid
+        .iter()
+        .enumerate()
+        .flat_map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .filter_map(move |(x, tile)| match tile {
+                    Tile::Air => None,
+                    Tile::Wall => None,
+                    Tile::Box => Some(x + (100 * y)),
+                })
+        })
+        .sum::<usize>();
+
+    Ok(gps_sum.to_string())
 }
 
 fn part2(input: &str) -> PartResult {
