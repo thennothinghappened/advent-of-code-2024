@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use rustc_hash::FxHashSet;
 
 use crate::utils::{
     boxdraw,
@@ -126,9 +127,9 @@ fn part2(input: &str) -> PartResult {
         let target = robot_pos + move_dir;
         let target_tile = *grid.get_2d_unchecked(target);
 
-        debug_show_state(&grid, robot_pos);
-        println!("Next Move: {:?}", move_dir);
-        wait_for_user();
+        // debug_show_state(&grid, robot_pos);
+        // println!("\n-----------\nBelow Move: {:?}", move_dir);
+        // wait_for_user();
 
         match target_tile {
             DWTile::Air => {
@@ -163,12 +164,102 @@ fn part2(input: &str) -> PartResult {
                 *grid.get_2d_mut_unchecked(edit_pos) = match grid.get_2d_unchecked(edit_pos) {
                     DWTile::BoxLeft => DWTile::BoxRight,
                     DWTile::BoxRight => DWTile::BoxLeft,
-                    _ => panic!("This should be unreachable!"),
+                    _ => unreachable!(),
                 };
             }
         } else {
             // shenanigans afoot!
-            todo!("aaa!!!");
+
+            // 1. Discover all the boxes in our way (a tree!)
+            // 2. For the final lot on each branch, ensure we can move 'em.
+            // 3. Starting from the finals and working backwards, move each box to its new position.
+
+            // List of x-positions of the boxes to be moved. A new row is appended for each y
+            // increment away from the target.
+            let mut box_positions = Vec::<FxHashSet<i32>>::new();
+            let mut can_be_done = true;
+
+            box_positions.push({
+                let mut next: FxHashSet<i32> = FxHashSet::default();
+
+                next.insert(target.x);
+                next.insert(match target_tile {
+                    DWTile::BoxLeft => target.x + 1,
+                    DWTile::BoxRight => target.x - 1,
+                    _ => unreachable!(),
+                });
+
+                next
+            });
+
+            'find_tree: loop {
+                let mut y = target.y;
+
+                if move_dir == Direction::Up {
+                    y -= box_positions.len() as i32;
+                } else {
+                    y += box_positions.len() as i32;
+                }
+
+                let prev = box_positions.last().unwrap();
+                let mut next: FxHashSet<i32> = FxHashSet::default();
+
+                if y == 0 || y == grid.len() as i32 {
+                    can_be_done = false;
+                    break 'find_tree;
+                }
+
+                for &x in prev {
+                    let ahead = Pos { x, y };
+                    let ahead_tile = grid.get_2d_unchecked(ahead);
+
+                    match ahead_tile {
+                        DWTile::Air => continue,
+                        DWTile::Wall => {
+                            // println!("wall @ {} blocks our path!", ahead);
+                            can_be_done = false;
+                            break 'find_tree;
+                        }
+                        DWTile::BoxLeft => next.insert(x + 1),
+                        DWTile::BoxRight => next.insert(x - 1),
+                    };
+
+                    next.insert(x);
+                }
+
+                if next.is_empty() {
+                    break;
+                }
+
+                box_positions.push(next);
+            }
+
+            // println!("{:?}", box_positions);
+
+            if !can_be_done {
+                // println!("it cannot be done");
+                continue;
+            }
+
+            for (y_offset, row) in box_positions.iter().enumerate().rev() {
+                let offset_direction: i32 = if move_dir == Direction::Up { -1 } else { 1 };
+                let y = target.y + (y_offset as i32) * offset_direction;
+
+                for &x in row {
+                    let src_pos = Pos { x, y };
+                    let dest_pos = src_pos + move_dir;
+
+                    // println!(
+                    //     "{} => {} (move direction: {:?}, y: {}, y_offset: {})",
+                    //     src_pos, dest_pos, move_dir, y, y_offset
+                    // );
+
+                    *grid.get_2d_mut_unchecked(dest_pos) = *grid.get_2d_unchecked(src_pos);
+                    *grid.get_2d_mut_unchecked(src_pos) = DWTile::Air;
+
+                    // debug_show_state(&grid, robot_pos);
+                }
+            }
         }
 
         robot_pos = target;
@@ -241,7 +332,7 @@ where
     char: From<T>,
 {
     println!(
-        "\n{}",
+        "{}",
         grid.iter()
             .enumerate()
             .map(|(y, row)| row
