@@ -10,7 +10,7 @@ use super::{
 };
 
 const EMPTY: char = ' ';
-const FILLED: char = '╳';
+const FILLED: char = '░';
 
 /// Draw the bounds of a shape within a grid, using the provided predicate to determine whether a
 /// given position lies within the box, or not.
@@ -96,6 +96,40 @@ where
     )
 }
 
+/// Draw a shape in a grid, using the provided predicate to determine whether a given position lies
+/// within the box, or not.
+///
+/// Unicode box-drawing characters are used for this task, and the result is a string that can be
+/// printed directly.
+///
+/// # Safety
+/// It is the responsibility of the caller to ensure that the given grid size matches the grid that
+/// is being used as the input. If this is not true, the `within_box` predicate may be passed values
+/// of positions exceeding the bounds of the underlying grid.
+pub fn draw_shape<F>(grid_width: usize, grid_height: usize, within_box: F) -> String
+where
+    F: Fn(Pos) -> bool,
+{
+    let header = "═".repeat(grid_width);
+
+    format!(
+        "╔{}╗\n{}\n╚{}╝",
+        header,
+        (0..(grid_height as i32))
+            .map(|y| {
+                (0..(grid_width as i32))
+                    .map(|x| match within_box(Pos { x, y }) {
+                        true => FILLED,
+                        false => EMPTY,
+                    })
+                    .join("")
+            })
+            .map(|row| format!("║{row}║"))
+            .join("\n"),
+        header
+    )
+}
+
 fn direction_edge_char(direction: Direction) -> char {
     match direction {
         Direction::Up => '─',
@@ -114,8 +148,11 @@ fn direction_corner_convex(direction: Direction) -> char {
     }
 }
 
-#[test]
-fn test_shape_outline() {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use indoc::indoc;
+
     #[rustfmt::skip]
     const GRID: &[u8] = &[
         0,0,0,0,0,
@@ -128,31 +165,53 @@ fn test_shape_outline() {
     const GRID_WIDTH: usize = 5;
     const GRID_HEIGHT: usize = 5;
 
-    #[rustfmt::skip]
-    const EXPECTED: &str = 
-"╔═══════════════╗
-║               ║
-║               ║
-║   ┌───────┐   ║
-║   │╳╳╳╳╳╳╳│   ║
-║   └──┐╳┌──┘   ║
-║      │╳│   ┌─┐║
-║      │╳│   │╳│║
-║      │╳│   │╳│║
-║   ┌──┘╳└───┘╳│║
-║   │╳╳╳╳╳╳╳╳╳╳│║
-║   └──┐╳╳╳╳╳╳╳│║
-║      │╳╳╳╳╳╳╳│║
-║      │╳╳╳╳╳╳╳│║
-║      └───────┘║
-║               ║
-╚═══════════════╝";
+    #[test]
+    fn shape_outline_correct() {
+        const EXPECTED: &str = indoc! {"
+            ╔═══════════════╗
+            ║               ║
+            ║               ║
+            ║   ┌───────┐   ║
+            ║   │░░░░░░░│   ║
+            ║   └──┐░┌──┘   ║
+            ║      │░│   ┌─┐║
+            ║      │░│   │░│║
+            ║      │░│   │░│║
+            ║   ┌──┘░└───┘░│║
+            ║   │░░░░░░░░░░│║
+            ║   └──┐░░░░░░░│║
+            ║      │░░░░░░░│║
+            ║      │░░░░░░░│║
+            ║      └───────┘║
+            ║               ║
+            ╚═══════════════╝"
+        };
 
-    let output = draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
-        *GRID.flat_index(GRID_WIDTH, pos) == 1
-    });
+        let output = draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
+            *GRID.flat_index(GRID_WIDTH, pos) == 1
+        });
 
-    println!("Expected:\n{EXPECTED}\n\nActual:\n{output}");
+        println!("Expected:\n{EXPECTED}\n\nActual:\n{output}");
+        assert_eq!(output, EXPECTED);
+    }
 
-    assert_eq!(output, EXPECTED);
+    #[test]
+    fn shape_correct() {
+        const EXPECTED: &str = indoc! {"
+            ╔═════╗
+            ║     ║
+            ║ ░░░ ║
+            ║  ░ ░║
+            ║ ░░░░║
+            ║  ░░░║
+            ╚═════╝"
+        };
+
+        let output = draw_shape(GRID_WIDTH, GRID_HEIGHT, |pos| {
+            *GRID.flat_index(GRID_WIDTH, pos) == 1
+        });
+
+        println!("Expected:\n{EXPECTED}\n\nActual:\n{output}");
+        assert_eq!(output, EXPECTED);
+    }
 }
