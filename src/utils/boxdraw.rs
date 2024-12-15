@@ -42,7 +42,7 @@ where
                 continue;
             }
 
-            let outgrid_pos = pos * 3 + Pos::from(1).horizontal();
+            let outgrid_pos = (pos * 3) + 1;
             *outgrid.get_2d_mut_unchecked(outgrid_pos) = FILLED;
 
             for direction in DIRECTIONS {
