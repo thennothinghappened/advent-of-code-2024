@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ptr};
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub struct Pos {
@@ -182,6 +182,12 @@ pub trait Index2d<T> {
     fn get_2d_unchecked(&self, index: Pos) -> &Self::Output;
     fn get_2d_mut(&mut self, index: Pos) -> Option<&mut Self::Output>;
     fn get_2d_mut_unchecked(&mut self, index: Pos) -> &mut Self::Output;
+
+    fn swap_2d_unchecked(&mut self, a: Pos, b: Pos) {
+        unsafe {
+            ptr::swap(self.get_2d_mut_unchecked(a), self.get_2d_mut_unchecked(b));
+        }
+    }
 }
 
 impl<T> Index2d<Pos> for Vec<Vec<T>> {
