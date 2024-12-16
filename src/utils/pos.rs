@@ -178,6 +178,9 @@ impl std::ops::Rem<i32> for Pos {
 pub trait Index2d<T> {
     type Output;
 
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+
     fn get_2d(&self, index: Pos) -> Option<&Self::Output>;
     fn get_2d_unchecked(&self, index: Pos) -> &Self::Output;
     fn get_2d_mut(&mut self, index: Pos) -> Option<&mut Self::Output>;
@@ -192,6 +195,14 @@ pub trait Index2d<T> {
 
 impl<T> Index2d<Pos> for Vec<Vec<T>> {
     type Output = T;
+
+    fn width(&self) -> usize {
+        self[0].len()
+    }
+
+    fn height(&self) -> usize {
+        self.len()
+    }
 
     fn get_2d(&self, index: Pos) -> Option<&Self::Output> {
         if !index.is_positive() {
