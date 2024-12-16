@@ -110,6 +110,25 @@ pub fn draw_shape<F>(grid_width: usize, grid_height: usize, within_box: F) -> St
 where
     F: Fn(Pos) -> bool,
 {
+    draw_grid(grid_width, grid_height, |pos| match within_box(pos) {
+        true => FILLED,
+        false => EMPTY,
+    })
+}
+
+/// Draw a grid of characters, using the provided function to determine the character to draw for
+/// each position in the grid.
+///
+/// The resulting string is formatted to be printed.
+///
+/// # Safety
+/// It is the responsibility of the caller to ensure that the given grid size matches the grid that
+/// is being used as the input. If this is not true, the `tile_at` function may be passed values
+/// of positions exceeding the bounds of the underlying grid.
+pub fn draw_grid<F>(grid_width: usize, grid_height: usize, tile_at: F) -> String
+where
+    F: Fn(Pos) -> char,
+{
     let header = "═".repeat(grid_width);
 
     format!(
@@ -118,10 +137,7 @@ where
         (0..(grid_height as i32))
             .map(|y| {
                 (0..(grid_width as i32))
-                    .map(|x| match within_box(Pos { x, y }) {
-                        true => FILLED,
-                        false => EMPTY,
-                    })
+                    .map(|x| tile_at(Pos::new(x, y)))
                     .join("")
             })
             .map(|row| format!("║{row}║"))
