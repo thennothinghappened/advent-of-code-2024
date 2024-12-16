@@ -2,7 +2,7 @@ use super::pos::Pos;
 
 #[enumflags2::bitflags]
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
     Right,
