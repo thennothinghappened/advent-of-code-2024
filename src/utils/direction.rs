@@ -36,6 +36,10 @@ impl Direction {
         }
     }
 
+    pub fn turned_left(&self) -> Self {
+        self.turned_right().opposite()
+    }
+
     pub fn opposite(&self) -> Self {
         match self {
             Direction::Up => Direction::Down,
