@@ -78,3 +78,14 @@ impl From<Direction> for Pos {
         }
     }
 }
+
+impl From<Direction> for char {
+    fn from(value: Direction) -> Self {
+        match value {
+            Direction::Up => '^',
+            Direction::Right => '>',
+            Direction::Down => 'v',
+            Direction::Left => '<',
+        }
+    }
+}
