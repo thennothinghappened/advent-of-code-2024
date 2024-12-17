@@ -38,9 +38,7 @@ fn part1(input: &str) -> PartResult {
         println!("VM State: {:?}", vm);
     }
 
-    println!("VM Output: {:?}", vm.output);
-
-    not_yet_implemented()
+    Ok(vm.output.iter().join(","))
 }
 
 #[derive(Debug, Default)]
@@ -76,7 +74,7 @@ impl Vm {
                 self.b ^= operand;
             }
             Op::Bst => {
-                self.b = operand % 8;
+                self.b = self.combo(operand) % 8;
             }
             Op::Jnz => {
                 if self.a != 0 {
@@ -144,4 +142,79 @@ impl From<u8> for Op {
 
 fn part2(input: &str) -> PartResult {
     not_yet_implemented()
+}
+
+#[test]
+fn test_instructions() {
+    {
+        let mut vm = Vm {
+            c: 9,
+            instructions: vec![(2.into(), 6)],
+            ..Default::default()
+        };
+
+        let mut count = 1;
+
+        while vm.cycle() {
+            count += 1;
+        }
+
+        assert_eq!(count, 1);
+        assert_eq!(vm.b, 1);
+    }
+
+    {
+        let mut vm = Vm {
+            a: 10,
+            instructions: vec![(Op::from(5), 0), (Op::from(5), 1), (Op::from(5), 4)],
+            ..Default::default()
+        };
+
+        let mut count = 1;
+
+        while vm.cycle() {
+            count += 1;
+        }
+
+        assert_eq!(count, 3);
+        assert_eq!(vm.output.iter().join(","), "0,1,2");
+    }
+
+    {
+        let mut vm = Vm {
+            a: 2024,
+            instructions: vec![(Op::from(0), 1), (Op::from(5), 4), (Op::from(3), 0)],
+            ..Default::default()
+        };
+
+        while vm.cycle() {}
+
+        assert_eq!(vm.a, 0);
+        assert_eq!(vm.output.iter().join(","), "4,2,5,6,7,7,7,7,3,1,0");
+    }
+
+    {
+        let mut vm = Vm {
+            b: 29,
+            instructions: vec![(1.into(), 7)],
+            ..Default::default()
+        };
+
+        while vm.cycle() {}
+
+        assert_eq!(vm.b, 26);
+    }
+
+    {
+        let mut vm = Vm {
+            b: 2024,
+            c: 43690,
+            instructions: vec![(4.into(), 0)],
+            ..Default::default()
+        };
+
+        while vm.cycle() {}
+
+        assert_eq!(vm.b, 44354);
+    }
 }
