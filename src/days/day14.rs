@@ -1,12 +1,8 @@
-use std::io;
 
 use itertools::Itertools;
 
 use super::{DayResult, PartResult};
-use crate::utils::{
-    boxdraw, not_yet_implemented,
-    pos::{Index2d, Pos},
-};
+use crate::utils::pos::Pos;
 
 const GRID_DIMENSIONS: Pos = Pos { x: 101, y: 103 };
 

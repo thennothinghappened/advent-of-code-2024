@@ -1,4 +1,3 @@
-use crate::utils::not_yet_implemented;
 
 use super::{DayResult, PartResult};
 use itertools::Itertools;

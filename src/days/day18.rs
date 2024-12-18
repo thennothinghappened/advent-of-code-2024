@@ -1,11 +1,9 @@
 use itertools::Itertools;
-use rustc_hash::{FxHashMap, FxHashSet};
+use rustc_hash::FxHashSet;
 
 use crate::utils::{
-    boxdraw,
     direction::DIRECTIONS,
-    not_yet_implemented,
-    pos::{self, Index2d, Pos},
+    pos::{Index2d, Pos},
 };
 
 use super::{DayResult, PartResult};
