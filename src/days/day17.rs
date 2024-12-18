@@ -42,8 +42,8 @@ pub(crate) fn solve(input: &str) -> DayResult {
 fn part1(mut vm: Vm) -> String {
     let mut output = Vec::new();
 
-    while !vm.is_finished() {
-        if let Some(data) = vm.perform_next() {
+    while let Some(maybe_data) = vm.perform_next() {
+        if let Some(data) = maybe_data {
             output.push(data);
         }
     }
@@ -54,52 +54,98 @@ fn part1(mut vm: Vm) -> String {
 fn part2(mut vm: Vm) -> String {
     let initial_b = vm.b;
     let initial_c = vm.c;
-    let required_output_count = vm.instructions.len() * 2;
+    let required_num_instructions = vm.instructions.len();
+    let required_output_length = required_num_instructions * 2;
 
-    'attempts: for a in 0..u64::MAX {
-        vm.a = a;
+    // I'm working under a bunch of assumptions here.
+    // TODO: write 'em down!
+
+    // Assumption: There is exactly one ADV instruction, used to effectively decrement the loop
+    // count.
+    let adv_operand = vm
+        .instructions
+        .iter()
+        .find(|(op, _)| *op == Op::Adv)
+        .map(|(_, operand)| *operand)
+        .expect("There should be one instance of ADV!");
+
+    // Assumption: ADV is only passed constant operands, so the number of loops is known before
+    // execution.
+    assert!(adv_operand <= 3);
+
+    // Assumption: JNZ is only ever used to continue the program loop from the start, or cease
+    // execution if no more numbers should be printed.
+    assert!(*vm.instructions.last().unwrap() == (Op::Jnz, 0));
+
+    let a_divisor = 2u64.pow(adv_operand as u32);
+    let max_possible_a = a_divisor.pow(required_output_length as u32);
+
+    // Given the assumptions we've made, we know within these bounds that a valid A value, when
+    // divided by `2 ^ adv_operand`, `required_output_length` times, equals 0.
+    find_a(&mut vm, 1, initial_b, initial_c, a_divisor)
+        .expect("There should be a solution!!!")
+        .to_string()
+}
+
+fn find_a(
+    vm: &mut Vm,
+    initial_search_a: u64,
+    initial_b: u64,
+    initial_c: u64,
+    a_divisor: u64,
+) -> Option<u64> {
+    let required_num_instructions = vm.instructions.len();
+
+    'mid_search: for n in 0..=a_divisor {
+        let test_a = initial_search_a + n;
+
+        vm.a = test_a;
         vm.b = initial_b;
         vm.c = initial_c;
         vm.ip = 0;
 
-        let mut output_index = 0;
+        println!("From initial {initial_search_a} :: {test_a} :: #{n}");
 
-        if a % 1000000 == 0 {
-            println!("Trying A = {}", a);
-        }
+        for output_index in (0..required_num_instructions).rev() {
+            let Some(op_result) = vm.perform_until_output().map(Op::try_from) else {
+                // if output_index == (required_num_instructions - 1) {
+                //     continue 'mid_search;
+                // }
 
-        while output_index < required_output_count && !vm.is_finished() {
-            if let Some(data) = vm.perform_next() {
-                let (expected_op, expected_operand) = vm.instructions[output_index / 2];
-
-                if output_index % 2 == 0 {
-                    let Ok(op) = Op::try_from(data) else {
-                        continue 'attempts;
-                    };
-
-                    if op != expected_op {
-                        continue 'attempts;
-                    }
-                } else if data != expected_operand {
-                    continue 'attempts;
+                // Partial match.
+                if let Some(a) = find_a(vm, test_a * a_divisor, initial_b, initial_c, a_divisor) {
+                    return Some(a);
+                } else {
+                    continue 'mid_search;
                 }
+            };
 
-                output_index += 1;
+            let Ok(op) = op_result else {
+                continue 'mid_search;
+            };
+
+            let Some(operand) = vm.perform_until_output() else {
+                // if output_index == (required_num_instructions - 1) {
+                //     continue 'mid_search;
+                // }
+
+                // Partial match.
+                if let Some(a) = find_a(vm, test_a * a_divisor, initial_b, initial_c, a_divisor) {
+                    return Some(a);
+                } else {
+                    continue 'mid_search;
+                }
+            };
+
+            if vm.instructions[output_index] != (op, operand) {
+                continue 'mid_search;
             }
         }
 
-        if output_index < required_output_count {
-            // println!(
-            //     "Expected {} output numbers, got {}.",
-            //     expected_output_count, output_index
-            // );
-            continue;
-        }
-
-        return a.to_string();
+        return Some(test_a);
     }
 
-    panic!("There should be a solution!!!");
+    None
 }
 
 #[derive(Debug, Default, Clone)]
@@ -112,12 +158,29 @@ struct Vm<'a> {
 }
 
 impl Vm<'_> {
-    /// Perform the next instruction in the instruction list. Optionally returns outputted data.
-    fn perform_next(&mut self) -> Option<u8> {
+    /// Perform the next instruction in the instruction list. If the program has finished, `None`
+    /// is returned.
+    fn perform_next(&mut self) -> Option<Option<u8>> {
+        if self.is_finished() {
+            return None;
+        }
+
         let (op, operand) = self.instructions[self.ip];
 
         self.ip += 1;
-        self.perform(op, operand as u32)
+        Some(self.perform(op, operand as u32))
+    }
+
+    /// Execute the program until an output is made, or return `None` if the program ends without
+    /// outputting any value.
+    fn perform_until_output(&mut self) -> Option<u8> {
+        while let Some(maybe_data) = self.perform_next() {
+            if maybe_data.is_some() {
+                return maybe_data;
+            }
+        }
+
+        None
     }
 
     fn is_finished(&self) -> bool {
@@ -241,10 +304,11 @@ fn test_instructions() {
         let mut count = 0;
         let mut output = Vec::new();
 
-        while !vm.is_finished() {
-            if let Some(data) = vm.perform_next() {
+        while let Some(maybe_data) = vm.perform_next() {
+            if let Some(data) = maybe_data {
                 output.push(data);
             }
+
             count += 1;
         }
 
@@ -265,8 +329,8 @@ fn test_instructions() {
 
         let mut output = Vec::new();
 
-        while !vm.is_finished() {
-            if let Some(data) = vm.perform_next() {
+        while let Some(maybe_data) = vm.perform_next() {
+            if let Some(data) = maybe_data {
                 output.push(data);
             }
         }
