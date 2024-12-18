@@ -239,6 +239,44 @@ impl<T> Index2d<Pos> for Vec<Vec<T>> {
     }
 }
 
+impl<T, const W: usize, const H: usize> Index2d<Pos> for [[T; W]; H] {
+    type Output = T;
+
+    fn width(&self) -> usize {
+        self[0].len()
+    }
+
+    fn height(&self) -> usize {
+        self.len()
+    }
+
+    fn get_2d(&self, index: Pos) -> Option<&Self::Output> {
+        if !index.is_positive() {
+            return None;
+        }
+
+        let row = self.get(index.y as usize)?;
+        row.get(index.x as usize)
+    }
+
+    fn get_2d_unchecked(&self, index: Pos) -> &Self::Output {
+        &self[index.y as usize][index.x as usize]
+    }
+
+    fn get_2d_mut(&mut self, index: Pos) -> Option<&mut Self::Output> {
+        if !index.is_positive() {
+            return None;
+        }
+
+        let row = self.get_mut(index.y as usize)?;
+        row.get_mut(index.x as usize)
+    }
+
+    fn get_2d_mut_unchecked(&mut self, index: Pos) -> &mut Self::Output {
+        &mut self[index.y as usize][index.x as usize]
+    }
+}
+
 pub trait FlatIndex<T> {
     type Output: ?Sized;
     fn flat_index(&self, width: usize, index: T) -> &Self::Output;
