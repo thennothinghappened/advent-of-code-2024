@@ -52,7 +52,7 @@ fn part1(input: &str) -> PartResult {
     not_yet_implemented()
 }
 
-fn part2(input: &str) -> PartResult {
+fn part2(_input: &str) -> PartResult {
     not_yet_implemented()
 }
 

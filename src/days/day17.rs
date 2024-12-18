@@ -1,5 +1,3 @@
-use std::u64;
-
 use super::DayResult;
 use itertools::Itertools;
 
@@ -50,8 +48,8 @@ fn part1(mut vm: Vm) -> String {
 fn part2(mut vm: Vm) -> anyhow::Result<String> {
     let initial_b = vm.b;
     let initial_c = vm.c;
-    let required_num_instructions = vm.instructions.len();
-    let required_output_length = required_num_instructions * 2;
+    // let required_num_instructions = vm.instructions.len();
+    // let required_output_length = required_num_instructions * 2;
 
     // I'm working under a bunch of assumptions here.
     // TODO: write 'em down!
@@ -74,7 +72,7 @@ fn part2(mut vm: Vm) -> anyhow::Result<String> {
     assert!(*vm.instructions.last().unwrap() == (Op::Jnz, 0));
 
     let a_divisor = 2u64.pow(adv_operand as u32);
-    let max_possible_a = a_divisor.pow(required_output_length as u32);
+    // let max_possible_a = a_divisor.pow(required_output_length as u32);
 
     // Given the assumptions we've made, we know within these bounds that a valid A value, when
     // divided by `2 ^ adv_operand`, `required_output_length` times, equals 0.

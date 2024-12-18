@@ -81,7 +81,7 @@ fn evaluate_report(report: &[i32]) -> bool {
             return false;
         }
 
-        if diff_abs < MIN_DEVIATION || diff_abs > MAX_DEVIATION {
+        if !(MIN_DEVIATION..=MAX_DEVIATION).contains(&diff_abs) {
             return false;
         }
     }

@@ -32,6 +32,7 @@ impl Pos {
         Pos { x: 0, y: self.y }
     }
 
+    #[allow(dead_code)]
     pub fn is_in_rect(&self, top_left: &Pos, bottom_right: &Pos) -> bool {
         self.x >= top_left.x
             && self.y >= top_left.y
