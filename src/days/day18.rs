@@ -24,7 +24,9 @@ const FINISH: Pos = Pos {
 };
 
 fn part1(input: &str) -> PartResult {
-    let barricade_positions_thru_time: Vec<Pos> = input
+    let mut passibility_grid = [[Some(u32::MAX); GRID_WIDTH]; GRID_HEIGHT];
+
+    input
         .lines()
         .map(|line| {
             line.split(',')
@@ -35,52 +37,119 @@ fn part1(input: &str) -> PartResult {
                 .into()
         })
         .take(1024)
-        .collect_vec();
+        .for_each(|pos: Pos| {
+            *passibility_grid.get_2d_mut_unchecked(pos) = None;
+        });
 
-    let passibility_grid = (0..GRID_WIDTH)
-        .map(|y| {
-            (0..GRID_WIDTH)
-                .map(|x| {
-                    !barricade_positions_thru_time.contains(&Pos::new_from_usize_unchecked(x, y))
-                })
-                .collect_vec()
-        })
-        .collect_vec();
+    // println!(
+    //     "{}",
+    //     boxdraw::draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
+    //         *passibility_grid.get_2d_unchecked(pos)
+    //     })
+    // );
 
-    println!(
-        "{}",
-        boxdraw::draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
-            *passibility_grid.get_2d_unchecked(pos)
-        })
-    );
+    match path_find(&mut passibility_grid, START, FINISH) {
+        Some(steps) => Ok(steps.to_string()),
+        None => Err(anyhow::anyhow!("No valid path found!").into()),
+    }
+}
 
-    // Set of all nodes, and their associated distances from the starting node.
-    let mut nodes = FxHashMap::<Pos, u64>::default();
+fn part2(input: &str) -> PartResult {
+    not_yet_implemented()
 
+    // let mut passibility_grid = (0..GRID_WIDTH)
+    //     .map(|y| {
+    //         (0..GRID_WIDTH)
+    //             .map(|x| {
+    //                 !barricade_positions_thru_time.contains(&Pos::new_from_usize_unchecked(x, y))
+    //             })
+    //             .collect_vec()
+    //     })
+    //     .collect_vec();
+
+    // println!(
+    //     "{}",
+    //     boxdraw::draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
+    //         *passibility_grid.get_2d_unchecked(pos)
+    //     })
+    // );
+
+    // // Set of all nodes, and their associated distances from the starting node.
+    // let mut nodes = FxHashMap::<Pos, u64>::default();
+
+    // // Set of nodes we haven't yet visited.
+    // let mut unvisited = FxHashSet::<Pos>::default();
+
+    // for y in 0..GRID_HEIGHT {
+    //     for x in 0..GRID_WIDTH {
+    //         let pos = Pos::new_from_usize_unchecked(x, y);
+
+    //         if *passibility_grid.get_2d_unchecked(pos) {
+    //             nodes.insert(pos, u64::MAX);
+    //             unvisited.insert(pos);
+    //         }
+    //     }
+    // }
+
+    // // The starting node is of course, a distance of 0 from itself!
+    // nodes.entry(START).and_modify(|distance| *distance = 0);
+
+    // while !unvisited.is_empty() {
+    //     // Choose the closest node to evaluate from.
+    //     let Some((&check_pos, &check_pos_dist)) = unvisited
+    //         .iter()
+    //         .map(|pos| nodes.get_key_value(pos).unwrap())
+    //         .filter(|&(_, dist)| *dist < u64::MAX)
+    //         .sorted_by(|a, b| Ord::cmp(a.1, b.1))
+    //         .next()
+    //     else {
+    //         break;
+    //     };
+
+    //     for neighbour_pos in DIRECTIONS
+    //         .iter()
+    //         .map(|&direction| check_pos + direction)
+    //         .filter(|pos| unvisited.contains(pos))
+    //     {
+    //         let dist_from_here = check_pos_dist + 1;
+
+    //         nodes.entry(neighbour_pos).and_modify(|dist| {
+    //             if *dist > dist_from_here {
+    //                 *dist = dist_from_here;
+    //             }
+    //         });
+    //     }
+
+    //     unvisited.remove(&check_pos);
+    // }
+
+    // Ok(nodes.get(&FINISH).unwrap().to_string())
+}
+
+fn path_find(
+    grid: &mut [[Option<u32>; GRID_WIDTH]; GRID_HEIGHT],
+    source: Pos,
+    destination: Pos,
+) -> Option<u32> {
     // Set of nodes we haven't yet visited.
     let mut unvisited = FxHashSet::<Pos>::default();
 
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            let pos = Pos::new_from_usize_unchecked(x, y);
-
-            if *passibility_grid.get_2d_unchecked(pos) {
-                nodes.insert(pos, u64::MAX);
-                unvisited.insert(pos);
-            }
+    for y in 0..GRID_HEIGHT as i32 {
+        for x in 0..GRID_WIDTH as i32 {
+            unvisited.insert(Pos::new(x, y));
         }
     }
 
     // The starting node is of course, a distance of 0 from itself!
-    nodes.entry(START).and_modify(|distance| *distance = 0);
+    *grid.get_2d_mut_unchecked(source) = Some(0);
 
     while !unvisited.is_empty() {
         // Choose the closest node to evaluate from.
-        let Some((&check_pos, &check_pos_dist)) = unvisited
+        let Some((&check_pos, check_pos_dist)) = unvisited
             .iter()
-            .map(|pos| nodes.get_key_value(pos).unwrap())
-            .filter(|&(_, dist)| *dist < u64::MAX)
-            .sorted_by(|a, b| Ord::cmp(a.1, b.1))
+            .filter_map(|pos| grid.get_2d_unchecked(*pos).map(|dist| (pos, dist)))
+            .filter(|&(_, dist)| dist < u32::MAX)
+            .sorted_by(|a, b| Ord::cmp(&a.1, &b.1))
             .next()
         else {
             break;
@@ -93,19 +162,18 @@ fn part1(input: &str) -> PartResult {
         {
             let dist_from_here = check_pos_dist + 1;
 
-            nodes.entry(neighbour_pos).and_modify(|dist| {
-                if *dist > dist_from_here {
-                    *dist = dist_from_here;
-                }
-            });
+            let Some(dist_recorded_there) = grid.get_2d_mut_unchecked(neighbour_pos) else {
+                continue;
+            };
+
+            if dist_from_here < *dist_recorded_there {
+                *dist_recorded_there = dist_from_here;
+            }
         }
 
         unvisited.remove(&check_pos);
     }
 
-    Ok(nodes.get(&FINISH).unwrap().to_string())
-}
-
-fn part2(input: &str) -> PartResult {
-    not_yet_implemented()
+    grid.get_2d_unchecked(destination)
+        .filter(|&dist| dist < u32::MAX)
 }
