@@ -155,6 +155,11 @@ fn path_find(
             break;
         };
 
+        // If we're checking the destination... well, we've arrived!
+        if check_pos == destination {
+            break;
+        }
+
         for neighbour_pos in DIRECTIONS
             .iter()
             .map(|&direction| check_pos + direction)
