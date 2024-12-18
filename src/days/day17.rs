@@ -1,18 +1,14 @@
 use std::u64;
 
-use anyhow::anyhow;
+use super::DayResult;
 use itertools::Itertools;
-
-use crate::utils::not_yet_implemented;
-
-use super::{DayResult, PartResult};
 
 pub(crate) fn solve(input: &str) -> DayResult {
     let mut lines = input.lines();
 
-    let a: u64 = lines.next().unwrap()[12..].parse().unwrap();
-    let b: u64 = lines.next().unwrap()[12..].parse().unwrap();
-    let c: u64 = lines.next().unwrap()[12..].parse().unwrap();
+    let a: u64 = lines.next().unwrap()[12..].parse()?;
+    let b: u64 = lines.next().unwrap()[12..].parse()?;
+    let c: u64 = lines.next().unwrap()[12..].parse()?;
 
     lines.next();
 
@@ -34,7 +30,7 @@ pub(crate) fn solve(input: &str) -> DayResult {
     };
 
     let part1_output = part1(vm.clone());
-    let part2_output = part2(vm);
+    let part2_output = part2(vm)?;
 
     Ok((part1_output, part2_output))
 }
@@ -51,7 +47,7 @@ fn part1(mut vm: Vm) -> String {
     output.iter().join(",")
 }
 
-fn part2(mut vm: Vm) -> String {
+fn part2(mut vm: Vm) -> anyhow::Result<String> {
     let initial_b = vm.b;
     let initial_c = vm.c;
     let required_num_instructions = vm.instructions.len();
@@ -67,7 +63,7 @@ fn part2(mut vm: Vm) -> String {
         .iter()
         .find(|(op, _)| *op == Op::Adv)
         .map(|(_, operand)| *operand)
-        .expect("There should be one instance of ADV!");
+        .ok_or(anyhow::anyhow!("There should be one instance of ADV!"))?;
 
     // Assumption: ADV is only passed constant operands, so the number of loops is known before
     // execution.
@@ -82,9 +78,10 @@ fn part2(mut vm: Vm) -> String {
 
     // Given the assumptions we've made, we know within these bounds that a valid A value, when
     // divided by `2 ^ adv_operand`, `required_output_length` times, equals 0.
-    find_a(&mut vm, 1, initial_b, initial_c, a_divisor)
-        .expect("There should be a solution!!!")
-        .to_string()
+    match find_a(&mut vm, 1, initial_b, initial_c, a_divisor) {
+        Some(a) => Ok(a.to_string()),
+        None => Err(anyhow::anyhow!("Failed to find the value of A!")),
+    }
 }
 
 fn find_a(
