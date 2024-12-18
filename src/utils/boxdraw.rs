@@ -1,13 +1,9 @@
-use itertools::Itertools;
-
-use crate::utils::pos::FlatIndex;
-
 use self::direction::{Direction, DIRECTIONS};
-
 use super::{
     direction,
     pos::{Index2d, Pos},
 };
+use itertools::Itertools;
 
 const EMPTY: char = ' ';
 const FILLED: char = '░';
@@ -22,6 +18,7 @@ const FILLED: char = '░';
 /// It is the responsibility of the caller to ensure that the given grid size matches the grid that
 /// is being used as the input. If this is not true, the `within_box` predicate may be passed values
 /// of positions exceeding the bounds of the underlying grid.
+#[allow(dead_code)]
 pub fn draw_shape_outline<F>(grid_width: usize, grid_height: usize, within_box: F) -> String
 where
     F: Fn(Pos) -> bool,
@@ -106,6 +103,7 @@ where
 /// It is the responsibility of the caller to ensure that the given grid size matches the grid that
 /// is being used as the input. If this is not true, the `within_box` predicate may be passed values
 /// of positions exceeding the bounds of the underlying grid.
+#[allow(dead_code)]
 pub fn draw_shape<F>(grid_width: usize, grid_height: usize, within_box: F) -> String
 where
     F: Fn(Pos) -> bool,
@@ -125,11 +123,12 @@ where
 /// It is the responsibility of the caller to ensure that the given grid size matches the grid that
 /// is being used as the input. If this is not true, the `tile_at` function may be passed values
 /// of positions exceeding the bounds of the underlying grid.
+#[allow(dead_code)]
 pub fn draw_grid<F>(grid_width: usize, grid_height: usize, tile_at: F) -> String
 where
     F: Fn(Pos) -> char,
 {
-    let header = "═".repeat(grid_width);
+    let header = "═".repeat(grid_width * 2);
 
     format!(
         "╔{}╗\n{}\n╚{}╝",
@@ -137,7 +136,7 @@ where
         (0..grid_height as i32)
             .map(|y| {
                 (0..grid_width as i32)
-                    .map(|x| tile_at(Pos::new(x, y)))
+                    .map(|x| tile_at(Pos::new(x, y)).to_string().repeat(2))
                     .join("")
             })
             .map(|row| format!("║{row}║"))
@@ -166,6 +165,8 @@ fn direction_corner_convex(direction: Direction) -> char {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::pos::FlatIndex;
+
     use super::*;
     use indoc::indoc;
 
@@ -214,13 +215,13 @@ mod tests {
     #[test]
     fn shape_correct() {
         const EXPECTED: &str = indoc! {"
-            ╔═════╗
-            ║     ║
-            ║ ░░░ ║
-            ║  ░ ░║
-            ║ ░░░░║
-            ║  ░░░║
-            ╚═════╝"
+            ╔══════════╗
+            ║          ║
+            ║  ░░░░░░  ║
+            ║    ░░  ░░║
+            ║  ░░░░░░░░║
+            ║    ░░░░░░║
+            ╚══════════╝"
         };
 
         let output = draw_shape(GRID_WIDTH, GRID_HEIGHT, |pos| {
