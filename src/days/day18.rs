@@ -14,8 +14,8 @@ pub(crate) fn solve(input: &str) -> DayResult {
     Ok((part1(input)?, part2(input)?))
 }
 
-const GRID_WIDTH: usize = 7;
-const GRID_HEIGHT: usize = 7;
+const GRID_WIDTH: usize = 71;
+const GRID_HEIGHT: usize = 71;
 
 const START: Pos = Pos { x: 0, y: 0 };
 const FINISH: Pos = Pos {
@@ -34,7 +34,7 @@ fn part1(input: &str) -> PartResult {
                 .unwrap()
                 .into()
         })
-        .take(12)
+        .take(1024)
         .collect_vec();
 
     let passibility_grid = (0..GRID_WIDTH)
@@ -103,13 +103,7 @@ fn part1(input: &str) -> PartResult {
         unvisited.remove(&check_pos);
     }
 
-    println!(
-        "{:?}\n\nCost to reach exit: {:?}",
-        nodes,
-        nodes.get(&FINISH).unwrap()
-    );
-
-    not_yet_implemented()
+    Ok(nodes.get(&FINISH).unwrap().to_string())
 }
 
 fn part2(input: &str) -> PartResult {
