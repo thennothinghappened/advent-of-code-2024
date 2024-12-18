@@ -41,7 +41,7 @@ fn part1(input: &str) -> PartResult {
 
     println!(
         "{}",
-        boxdraw::draw_shape(grid[0].len(), grid.len(), |pos| {
+        boxdraw::draw_shape(grid.width(), grid.height(), |pos| {
             match grid.get_2d_unchecked(pos) {
                 Tile::Air => false,
                 Tile::Wall => true,
