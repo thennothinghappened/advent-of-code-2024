@@ -55,75 +55,38 @@ fn part1(input: &str) -> PartResult {
 }
 
 fn part2(input: &str) -> PartResult {
-    not_yet_implemented()
+    let mut passibility_grid = [[Some(u32::MAX); GRID_WIDTH]; GRID_HEIGHT];
 
-    // let mut passibility_grid = (0..GRID_WIDTH)
-    //     .map(|y| {
-    //         (0..GRID_WIDTH)
-    //             .map(|x| {
-    //                 !barricade_positions_thru_time.contains(&Pos::new_from_usize_unchecked(x, y))
-    //             })
-    //             .collect_vec()
-    //     })
-    //     .collect_vec();
+    for block in input.lines().map(|line| {
+        Pos::from(
+            line.split(',')
+                .map(str::parse)
+                .map(Result::unwrap)
+                .collect_tuple::<(i32, i32)>()
+                .unwrap(),
+        )
+    }) {
+        // Add the next block.
+        *passibility_grid.get_2d_mut_unchecked(block) = None;
 
-    // println!(
-    //     "{}",
-    //     boxdraw::draw_shape_outline(GRID_WIDTH, GRID_HEIGHT, |pos| {
-    //         *passibility_grid.get_2d_unchecked(pos)
-    //     })
-    // );
+        // Try pathfinding.
+        if path_find(&mut passibility_grid, START, FINISH).is_none() {
+            return Ok(format!("{},{}", block.x, block.y));
+        }
 
-    // // Set of all nodes, and their associated distances from the starting node.
-    // let mut nodes = FxHashMap::<Pos, u64>::default();
+        // Reset distances.
+        for y in 0..GRID_HEIGHT {
+            for x in 0..GRID_WIDTH {
+                if let Some(dist) =
+                    passibility_grid.get_2d_mut_unchecked(Pos::new_from_usize_unchecked(x, y))
+                {
+                    *dist = u32::MAX;
+                }
+            }
+        }
+    }
 
-    // // Set of nodes we haven't yet visited.
-    // let mut unvisited = FxHashSet::<Pos>::default();
-
-    // for y in 0..GRID_HEIGHT {
-    //     for x in 0..GRID_WIDTH {
-    //         let pos = Pos::new_from_usize_unchecked(x, y);
-
-    //         if *passibility_grid.get_2d_unchecked(pos) {
-    //             nodes.insert(pos, u64::MAX);
-    //             unvisited.insert(pos);
-    //         }
-    //     }
-    // }
-
-    // // The starting node is of course, a distance of 0 from itself!
-    // nodes.entry(START).and_modify(|distance| *distance = 0);
-
-    // while !unvisited.is_empty() {
-    //     // Choose the closest node to evaluate from.
-    //     let Some((&check_pos, &check_pos_dist)) = unvisited
-    //         .iter()
-    //         .map(|pos| nodes.get_key_value(pos).unwrap())
-    //         .filter(|&(_, dist)| *dist < u64::MAX)
-    //         .sorted_by(|a, b| Ord::cmp(a.1, b.1))
-    //         .next()
-    //     else {
-    //         break;
-    //     };
-
-    //     for neighbour_pos in DIRECTIONS
-    //         .iter()
-    //         .map(|&direction| check_pos + direction)
-    //         .filter(|pos| unvisited.contains(pos))
-    //     {
-    //         let dist_from_here = check_pos_dist + 1;
-
-    //         nodes.entry(neighbour_pos).and_modify(|dist| {
-    //             if *dist > dist_from_here {
-    //                 *dist = dist_from_here;
-    //             }
-    //         });
-    //     }
-
-    //     unvisited.remove(&check_pos);
-    // }
-
-    // Ok(nodes.get(&FINISH).unwrap().to_string())
+    Err(anyhow::anyhow!("Somehow the path is never blocked??").into())
 }
 
 fn path_find(
@@ -182,3 +145,18 @@ fn path_find(
     grid.get_2d_unchecked(destination)
         .filter(|&dist| dist < u32::MAX)
 }
+
+// /// Trace the route from `source` to `destination` after [path_find] has been used to first find the
+// /// cheapest path.
+// ///
+// /// Returns the list of positions along the path. If no valid path exists, [None] is returned.
+// fn path_trace_route(
+//     grid: [[Option<u32>; GRID_WIDTH]; GRID_HEIGHT],
+//     source: Pos,
+//     destination: Pos,
+// ) -> Option<Vec<Pos>> {
+
+//     let mut
+
+//     todo!()
+// }
