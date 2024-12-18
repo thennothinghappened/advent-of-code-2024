@@ -40,7 +40,15 @@ impl Pos {
     }
 
     pub fn is_valid_grid_index(&self, grid_width: usize, grid_height: usize) -> bool {
-        self.is_positive() && (self.x as usize) < grid_width && (self.y as usize) < grid_height
+        let Ok(x) = usize::try_from(self.x) else {
+            return false;
+        };
+
+        let Ok(y) = usize::try_from(self.y) else {
+            return false;
+        };
+
+        x < grid_width && y < grid_height
     }
 
     pub fn from_flat_index(grid_width: usize, index: usize) -> Self {
