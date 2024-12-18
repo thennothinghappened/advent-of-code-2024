@@ -134,9 +134,9 @@ where
     format!(
         "╔{}╗\n{}\n╚{}╝",
         header,
-        (0..(grid_height as i32))
+        (0..grid_height as i32)
             .map(|y| {
-                (0..(grid_width as i32))
+                (0..grid_width as i32)
                     .map(|x| tile_at(Pos::new(x, y)))
                     .join("")
             })
