@@ -1,10 +1,21 @@
 use std::{error::Error, time::Instant};
 
+use clap::Parser;
+
 mod days;
 mod input;
 mod utils;
 
+#[derive(clap::Parser)]
+#[command(about)]
+struct Cli {
+    #[arg(short, long, value_name = "DAYS")]
+    run: Option<Vec<usize>>,
+}
+
 fn main() {
+    let cli = Cli::parse();
+
     let inputs_cache_path =
         input::init_inputs_cache().expect("Failed to initialize inputs cache path!");
     let cookie_opt = input::load_cookie().ok();
@@ -12,7 +23,11 @@ fn main() {
     days::DAYS
         .iter()
         .enumerate()
-        .map(|(i, day)| (i + 1, day))
+        .map(|(i, day_func)| (i + 1, day_func))
+        .filter(|(day, _)| match &cli.run {
+            Some(days) => days.contains(day),
+            None => true,
+        })
         .map::<Result<_, Box<dyn Error>>, _>(|(day, day_func)| {
             println!();
             println!("--- Day {} ---", day);
