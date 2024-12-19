@@ -9,7 +9,7 @@ mod utils;
 #[derive(clap::Parser)]
 #[command(about)]
 struct Cli {
-    #[arg(short, long, value_name = "DAYS")]
+    #[arg(short, long, value_name = "DAYS", value_delimiter = ',')]
     run: Option<Vec<usize>>,
 }
 
